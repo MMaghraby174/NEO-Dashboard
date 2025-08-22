@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neotrium Dashboard - MM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #121212;
+      color: #e5e7eb;
+    }
+
+    /* Custom styles for ApexCharts Tooltip */
+    .apexcharts-tooltip {
+      background: #1f2937 !important;
+      border: 1px solid #374151 !important;
+      color: #e5e7eb;
+    }
+
+    .apexcharts-tooltip .apexcharts-tooltip-title {
+      background: #2a3b4d !important;
+      border-bottom: 1px solid #374151 !important;
+    }
+    
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        z-index: 50;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Sidebar transitions */
+    #sidebar {
+        transition: width 0.3s ease-in-out;
+    }
+    #main-content-wrapper {
+        transition: margin-left 0.3s ease-in-out;
+    }
+    .tab-button span {
+        transition: opacity 0.2s ease-in-out;
+    }
+    
+    /* Accordion styles for report */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease-in-out;
+    }
+
+    /* Custom styles for profile questionnaire */
+    .profile-section {
+        margin-bottom: 24px;
+    }
+    .profile-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background-color: #2a3b4d;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-bottom: 16px;
+        transition: 0.2s;
+        border: 1px solid #374151;
+    }
+    .profile-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0px;
+        color: #ffffff;
+    }
+    .profile-input, .profile-select, .profile-textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #4b5563;
+        border-radius: 8px;
+        font-size: 14px;
+        background-color: #374151;
+        color: #e5e7eb;
+    }
+    .profile-label {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        font-weight: 500;
+        color: #d1d5db;
+        margin-bottom: 6px;
+    }
+    .profile-radio-label, .profile-checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        padding: 12px;
+        border: 2px solid #4b5563;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #1f2937;
+        transition: 0.2s;
+    }
+    .profile-radio-label.checked, .profile-checkbox-label.checked {
+      border-color: #22c55e;
+      background-color: rgba(34, 197, 94, 0.1);
+    }
+    .profile-tag-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 16px;
+      border: 1px solid #4b5563;
+      border-radius: 20px;
+      cursor: pointer;
+      background-color: #1f2937;
+      font-size: 14px;
+      transition: 0.2s;
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE 10 and IE 11 */
+      user-select: none; /* Standard syntax */
+    }
+    .profile-tag-label.checked {
+      border-color: #22c55e;
+      background-color: rgba(34, 197, 94, 0.1);
+      color: #a7f3d0;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900">
+
+  <div id="sidebar" class="fixed top-0 left-0 h-screen bg-[#1f2937] z-30 w-20 overflow-hidden">
+      <div id="profile-toggle" class="flex items-center p-4 cursor-pointer border-b border-gray-700">
+          <div class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center mr-4 shrink-0">
+              <span class="text-xl font-bold text-white">MM</span>
+          </div>
+          <div class="whitespace-nowrap opacity-0" style="transition: opacity 0.2s;">
+            <h1 class="text-lg font-bold text-white">Must Maghraby</h1>
+            <p class="text-sm text-gray-400">Optimize Member</p>
+          </div>
+      </div>
+
+      <nav id="tab-container" class="mt-6 flex flex-col space-y-2">
+        <button data-tab="profile" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-user-circle fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">User Profile</span>
+        </button>
+        <button data-tab="dashboard" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors bg-green-800 text-white">
+            <i class="fas fa-tachometer-alt fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Progress Dashboard</span>
+        </button>
+        <button data-tab="timeline" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-chart-gantt fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Progress Timeline</span>
+        </button>
+        <button data-tab="report" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-chart-line fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Report Summary</span>
+        </button>
+        <button data-tab="wearables" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-mobile-screen fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Wearables</span>
+        </button>
+        <button data-tab="meals" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-utensils fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Meal Plan</span>
+        </button>
+        <button data-tab="lifestyle" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-person-running fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Lifestyle Protocols</span>
+        </button>
+        <button data-tab="meal-log" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-book-medical fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap opacity-0">Meal Log</span>
+        </button>
+      </nav>
+  </div>
+
+  <div id="main-content-wrapper" class="ml-20">
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h2 id="page-title" class="text-2xl font-bold text-white">Progress Dashboard</h2>
+            <div class="flex items-center space-x-3 mt-4 md:mt-0">
+                <button id="book-appointment-btn" class="bg-[#1f2937] border border-[#374151] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#2a3b4d] transition flex items-center text-sm">
+                  <i class="fas fa-calendar-alt mr-2"></i>Book Lab Appointment
+                </button>
+                <button class="bg-[#1f2937] border border-[#374151] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#2a3b4d] transition flex items-center text-sm">
+                  <i class="fas fa-mobile-alt mr-2"></i>Integrate Wearables
+                </button>
+                <button class="bg-[#1f2937] border border-[#374151] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#2a3b4d] transition flex items-center text-sm">
+                  <i class="fas fa-upload mr-2"></i>Upload Lab Results
+                </button>
+            </div>
+        </header>
+
+        <main id="app-content">
+          </main>
+    </div>
+  </div>
+  
+  <div id="message-box" class="fixed top-24 right-4 z-50 transition-transform transform translate-x-full">
+    <div class="bg-green-600 text-white py-3 px-6 rounded-lg shadow-xl flex items-center">
+      <i class="fas fa-check-circle mr-3"></i>
+      <p id="message-text" class="font-semibold"></p>
+    </div>
+  </div>
+
+  <div id="booking-modal" class="modal-backdrop">
+      <div class="bg-[#1f2937] border border-[#374151] rounded-xl shadow-2xl w-full max-w-3xl m-4">
+          <div class="flex justify-between items-center p-5 border-b border-gray-700">
+              <h3 class="text-xl font-bold text-white">Book Lab Appointment</h3>
+              <button id="close-booking-modal" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+          </div>
+          <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div id="booking-calendar-container">
+                  </div>
+              <div>
+                  <h4 class="font-semibold text-white mb-3">Available Time Slots</h4>
+                  <div id="time-slots-container" class="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto">
+                      <p class="text-sm text-gray-500 col-span-3">Please select a date to see available times.</p>
+                  </div>
+              </div>
+          </div>
+          <div class="flex justify-end p-5 border-t border-gray-700">
+              <button id="confirm-appointment-btn" class="bg-green-700 hover:bg-green-600 text-white font-semibold py-2 px-5 rounded-lg transition-colors">Confirm Appointment</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    // --- Mock Data ---
+    const timelineData = [
+        {
+            date: 'August 2025',
+            title: 'Current Status & Optimization Phase',
+            summary: 'Continued focus on maintaining optimal levels across all biomarkers. Fine-tuning lifestyle protocols based on wearable data and subjective feedback.',
+            healthScore: 88,
+            icon: 'fa-flag-checkered',
+            color: 'green'
+        },
+        {
+            date: 'May 2025',
+            title: 'Focus on Nutrition & Supplementation',
+            summary: 'Implemented personalized meal plan and targeted supplementation for Vitamin D. Began consistent Zone 2 cardio.',
+            healthScore: 81,
+            icon: 'fa-apple-alt',
+            color: 'blue'
+        },
+        {
+            date: 'January 2025',
+            title: 'Initial Assessment & Baseline',
+            summary: 'First round of DNA and blood tests. Established baseline biomarker levels and identified key areas for improvement, particularly inflammation and Vitamin D deficiency.',
+            healthScore: 76,
+            icon: 'fa-play-circle',
+            color: 'gray'
+        }
+    ];
+    const biomarkerHistory = {
+        'Health Score': { name: 'Health Score', data: [76, 81, 88] },
+        'hs-CRP': { name: 'hs-CRP (mg/L)', data: [1.5, 1.0, 0.8] },
+        'Vitamin D': { name: 'Vitamin D (ng/mL)', data: [25, 30, 45] },
+        'Testosterone': { name: 'Testosterone (ng/dL)', data: [500, 550, 640] },
+        'HbA1c': { name: 'HbA1c (%)', data: [5.5, 5.4, 5.1] }
+    };
+    const timelineDates = ['January 2025', 'May 2025', 'August 2025'];
+
+    const cgmData = [{
+      time: '6am',
+      glucose: 85
+    }, {
+      time: '8am',
+      glucose: 110
+    }, {
+      time: '10am',
+      glucose: 95
+    }, {
+      time: '12pm',
+      glucose: 140
+    }, {
+      time: '2pm',
+      glucose: 115
+    }, {
+      time: '4pm',
+      glucose: 90
+    }, {
+      time: '6pm',
+      glucose: 130
+    }, {
+      time: '8pm',
+      glucose: 105
+    }, {
+      time: '10pm',
+      glucose: 92
+    }, ];
+    const foodScoreboardData = [{
+      name: 'Avocado',
+      icon: 'fa-leaf text-green-400',
+      improves: ['Cholesterol', 'Glucose'],
+      score: 9.5
+    }, {
+      name: 'Salmon',
+      icon: 'fa-fish text-pink-400',
+      improves: ['Inflammation', 'Cognition'],
+      score: 9.2
+    }, {
+      name: 'Spinach',
+      icon: 'fa-carrot text-emerald-400',
+      improves: ['Iron', 'Energy'],
+      score: 8.8
+    }, {
+      name: 'Eggs',
+      icon: 'fa-egg text-yellow-300',
+      improves: ['Testosterone', 'Vitamin D'],
+      score: 8.5
+    }, ];
+    const mealPlanData = {
+      breakfast: [{
+        id: 'b1',
+        name: 'Scrambled Eggs with Spinach & Avocado',
+        calories: 350,
+        protein: 25,
+        carbs: 10,
+        fats: 25,
+        img: 'https://images.pexels.com/photos/566566/pexels-photo-566566.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        micronutrients: [{
+          name: 'Vitamin D',
+          value: '15mcg'
+        }, {
+          name: 'Iron',
+          value: '4mg'
+        }]
+      }, {
+        id: 'b2',
+        name: 'Chocolate Avocado Smoothie',
+        calories: 450,
+        protein: 30,
+        carbs: 30,
+        fats: 28,
+        img: 'https://images.pexels.com/photos/4112861/pexels-photo-4112861.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        micronutrients: [{
+          name: 'Potassium',
+          value: '700mg'
+        }, {
+          name: 'Magnesium',
+          value: '80mg'
+        }]
+      }, ],
+      lunch: [{
+        id: 'l1',
+        name: 'Grilled Salmon with Quinoa & Asparagus',
+        calories: 550,
+        protein: 40,
+        carbs: 40,
+        fats: 25,
+        img: 'https://images.pexels.com/photos/64208/pexels-photo-64208.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        micronutrients: [{
+          name: 'Omega-3',
+          value: '2.5g'
+        }, {
+          name: 'Vitamin B12',
+          value: '5mcg'
+        }]
+      }, {
+        id: 'l2',
+        name: 'Chicken Salad with Mixed Greens',
+        calories: 450,
+        protein: 35,
+        carbs: 15,
+        fats: 30,
+        img: 'https://images.pexels.com/photos/1211887/pexels-photo-1211887.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        micronutrients: [{
+          name: 'Vitamin K',
+          value: '120mcg'
+        }, {
+          name: 'Selenium',
+          value: '30mcg'
+        }]
+      }, ],
+      dinner: [{
+        id: 'd1',
+        name: 'Lean Steak with Sweet Potato & Broccoli',
+        calories: 600,
+        protein: 50,
+        carbs: 45,
+        fats: 25,
+        img: 'https://images.pexels.com/photos/769289/pexels-photo-769289.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        micronutrients: [{
+          name: 'Zinc',
+          value: '10mg'
+        }, {
+          name: 'Iron',
+          value: '6mg'
+        }]
+      }, {
+        id: 'd2',
+        name: 'Chicken Skewers with Greek Salad',
+        calories: 550,
+        protein: 45,
+        carbs: 20,
+        fats: 30,
+        img: 'https://images.pexels.com/photos/2338407/pexels-photo-2338407.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
+        micronutrients: [{
+          name: 'Vitamin B6',
+          value: '1.5mg'
+        }, {
+          name: 'Folate',
+          value: '100mcg'
+        }]
+      }, ]
+    };
+    const lifestyleProtocolData = [
+        {
+            title: 'Strength Training',
+            description: 'Focus on compound lifts to support your goals of muscle gain and increased strength, as per your profile. Aim for 3-4 sessions per week.',
+            icon: 'fa-dumbbell',
+            imageUrl: 'https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        {
+            title: 'High-Intensity & Cardio',
+            description: 'Incorporate HIIT and swimming sessions to align with your "Very Active" lifestyle and support your goal for peak athletic performance.',
+            icon: 'fa-heart-pulse',
+            imageUrl: 'https://images.pexels.com/photos/863988/pexels-photo-863988.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        {
+            title: 'Intermittent Fasting',
+            description: 'Implement a 16/8 fasting window to improve glucose sensitivity and cellular repair.',
+            icon: 'fa-clock',
+            imageUrl: 'https://images.pexels.com/photos/3184183/pexels-photo-3184183.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        {
+            title: 'Sauna Therapy',
+            description: 'Use a sauna for 15-20 minutes after workouts to aid recovery and detoxification.',
+            icon: 'fa-temperature-high',
+            imageUrl: 'https://images.pexels.com/photos/7245464/pexels-photo-7245464.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        {
+            title: 'Cold Plunge',
+            description: 'Incorporate a 3-5 minute cold plunge to reduce inflammation and boost circulation.',
+            icon: 'fa-snowflake',
+            imageUrl: 'https://images.pexels.com/photos/8648931/pexels-photo-8648931.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        {
+            title: 'Wellness & Mindset',
+            description: 'Practice daily mindfulness meditation for 10 minutes to reduce cortisol levels and stress.',
+            icon: 'fa-brain',
+            imageUrl: 'https://images.pexels.com/photos/3771089/pexels-photo-3771089.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        }
+    ];
+    const loggingScheduleData = [{
+      date: new Date('2025-08-18T12:00:00Z'),
+      logged: {
+        breakfast: true,
+        lunch: false,
+        dinner: false
+      }
+    }, {
+      date: new Date('2025-08-17T12:00:00Z'),
+      logged: {
+        breakfast: true,
+        lunch: true,
+        dinner: true
+      }
+    }, {
+      date: new Date('2025-08-16T12:00:00Z'),
+      logged: {
+        breakfast: true,
+        lunch: true,
+        dinner: true
+      }
+    }, {
+      date: new Date('2025-08-15T12:00:00Z'),
+      logged: {
+        breakfast: true,
+        lunch: false,
+        dinner: true
+      }
+    }, {
+      date: new Date('2025-08-14T12:00:00Z'),
+      logged: {
+        breakfast: true,
+        lunch: true,
+        dinner: true
+      }
+    }, {
+      date: new Date('2025-08-13T12:00:00Z'),
+      logged: {
+        breakfast: false,
+        lunch: true,
+        dinner: true
+      }
+    }, {
+      date: new Date('2025-08-12T12:00:00Z'),
+      logged: {
+        breakfast: true,
+        lunch: true,
+        dinner: true
+      }
+    }, ];
+    // Mock data for detailed meal log entries
+    const mealLogDetailData = {
+      '2025-08-19': [{ // Added today's data for demonstration
+        type: 'breakfast',
+        name: 'Scrambled Eggs with Spinach & Avocado',
+        calories: 350
+      }, ],
+      '2025-08-18': [{
+        type: 'breakfast',
+        name: 'Scrambled Eggs with Spinach & Avocado',
+        calories: 350
+      }, ],
+      '2025-08-17': [{
+        type: 'breakfast',
+        name: 'Scrambled Eggs with Spinach & Avocado',
+        calories: 350
+      }, {
+        type: 'lunch',
+        name: 'Grilled Salmon with Quinoa & Asparagus',
+        calories: 550
+      }, {
+        type: 'dinner',
+        name: 'Lean Steak with Sweet Potato & Broccoli',
+        calories: 600
+      }, ],
+      '2025-08-16': [{
+        type: 'breakfast',
+        name: 'Chocolate Avocado Smoothie',
+        calories: 450
+      }, {
+        type: 'lunch',
+        name: 'Chicken Salad with Mixed Greens',
+        calories: 450
+      }, {
+        type: 'dinner',
+        name: 'Chicken Skewers with Greek Salad',
+        calories: 550
+      }, ],
+      '2025-08-15': [{
+        type: 'breakfast',
+        name: 'Scrambled Eggs with Spinach & Avocado',
+        calories: 350
+      }, {
+        type: 'dinner',
+        name: 'Chicken Skewers with Greek Salad',
+        calories: 550
+      }, ],
+      '2025-08-14': [{
+        type: 'breakfast',
+        name: 'Chocolate Avocado Smoothie',
+        calories: 450
+      }, {
+        type: 'lunch',
+        name: 'Grilled Salmon with Quinoa & Asparagus',
+        calories: 550
+      }, {
+        type: 'dinner',
+        name: 'Lean Steak with Sweet Potato & Broccoli',
+        calories: 600
+      }, ],
+      '2025-08-13': [{
+        type: 'lunch',
+        name: 'Chicken Salad with Mixed Greens',
+        calories: 450
+      }, {
+        type: 'dinner',
+        name: 'Chicken Skewers with Greek Salad',
+        calories: 550
+      }, ],
+      '2025-08-12': [{
+        type: 'breakfast',
+        name: 'Scrambled Eggs with Spinach & Avocado',
+        calories: 350
+      }, {
+        type: 'lunch',
+        name: 'Grilled Salmon with Quinoa & Asparagus',
+        calories: 550
+      }, {
+        type: 'dinner',
+        name: 'Lean Steak with Sweet Potato & Broccoli',
+        calories: 600
+      }, ],
+    };
+    const deliveredMeals = {
+        '2025-08-19': { breakfast: 'b1', lunch: 'l1', dinner: 'd1' },
+        '2025-08-20': { breakfast: 'b2', lunch: 'l2', dinner: 'd2' },
+        '2025-08-21': { breakfast: 'b1', lunch: 'l2', dinner: 'd1' },
+    };
+    const wearablesData = {
+        steps: { average: 8904, data: [6500, 4200, 3100, 8200, 9300, 7800, 2300] },
+        calories: { average: 2201, data: [2100, 1900, 1850, 2300, 2400, 2200, 1500] },
+        sleep: { 
+            average: "7h 56m", 
+            data: [
+                { x: 'Fri', y: [45, 180, 120, 90] },
+                { x: 'Sat', y: [60, 190, 110, 80] },
+                { x: 'Sun', y: [55, 170, 130, 85] },
+                { x: 'Mon', y: [50, 185, 125, 95] },
+                { x: 'Tue', y: [65, 175, 115, 75] },
+                { x: 'Wed', y: [70, 200, 100, 70] },
+                { x: 'Thu', y: [40, 160, 140, 100] }
+            ] 
+        },
+        heartRate: { average: 69, data: [68, 72, 65, 75, 69, 70, 62] }
+    };
+    const ageClocksData = {
+        bloodAge: {
+            value: 49.5,
+            change: -5.6,
+            history: [54, 53, 52, 51, 50, 49.5],
+            adding: [
+                { factor: 'HbA1c (%)', years: '+1.2' },
+                { factor: 'White Blood Cells (WBC)', years: '+0.8' },
+                { factor: 'Cholesterol', years: '+0.4' },
+                { factor: 'Red Cell Distribution Width (RDW)', years: '+0.3' },
+                { factor: 'Iron', years: '+0.1' }
+            ],
+            subtracting: [
+                { factor: 'Hs-CRP', years: '-0.9' }
+            ]
+        },
+        microbiomeAge: {
+            value: 49.6,
+            change: -2.2,
+            history: [52, 51, 50, 49.6],
+            adding: [
+                { factor: 'Bifidobacterium', years: '+0.8' },
+                { factor: 'Clostridium', years: '+0.5' },
+                { factor: 'Anaerotruncus', years: '+0.8' },
+                { factor: 'Blautia', years: '+0.3' },
+                { factor: 'Alistipes', years: '+0.7' }
+            ],
+            subtracting: [
+                { factor: 'Subdoligranulum', years: '-0.7' }
+            ]
+        },
+        epigeneticAge: {
+            value: 49.8,
+            change: -6.9,
+            history: [55, 54, 53, 52, 51, 49.8],
+            negative: [
+                { factor: 'Lung Function (PACKYRS)', zScore: '-0.9' }
+            ],
+            positive: [
+                { factor: 'Brain Ageing (B2M)', zScore: '-0.4' },
+                { factor: 'Immune System Modulation (Leptin)', zScore: '-1.5' },
+                { factor: 'Muscle Function (GDF-15)', zScore: '0.1' },
+                { factor: 'Kidney Function (Cystatin C)', zScore: '-0.2' }
+            ]
+        }
+    };
+    // --- State Management ---
+    let activeTab = 'dashboard';
+    let weeklyMealSelections = {}; // New state for weekly meal plan
+    let selectedMealPlanDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let selectedDate = new Date().toDateString();
+    
+    // Booking Modal State
+    let bookingMonth = new Date().getMonth();
+    let bookingYear = new Date().getFullYear();
+    let selectedBookingDate = null;
+    let selectedBookingTime = null;
+
+
+    // --- Helper Functions ---
+    const showMessage = (message, isError = false) => {
+      const msgBox = document.getElementById('message-box');
+      const msgText = document.getElementById('message-text');
+      const icon = msgBox.querySelector('i');
+      msgBox.classList.remove('bg-green-600', 'bg-red-600');
+      icon.classList.remove('fa-check-circle', 'fa-exclamation-circle');
+
+      if (isError) {
+        msgBox.classList.add('bg-red-600');
+        icon.classList.add('fa-exclamation-circle');
+      } else {
+        msgBox.classList.add('bg-green-600');
+        icon.classList.add('fa-check-circle');
+      }
+      msgText.textContent = message;
+      msgBox.classList.remove('translate-x-full');
+      msgBox.classList.add('translate-x-0');
+      setTimeout(() => {
+        msgBox.classList.remove('translate-x-0');
+        msgBox.classList.add('translate-x-full');
+      }, 3000);
+    };
+
+    const getMealById = (mealId) => {
+        for (const mealType in mealPlanData) {
+            const meal = mealPlanData[mealType].find(m => m.id === mealId);
+            if (meal) return meal;
+        }
+        return null;
+    };
+
+    const getMealByName = (mealName) => {
+        for (const mealType in mealPlanData) {
+            const meal = mealPlanData[mealType].find(m => m.name === mealName);
+            if (meal) return meal;
+        }
+        return null;
+    };
+
+    const calculateDailyTotals = (mealList) => {
+        const totals = mealList.reduce((acc, meal) => {
+            if (!meal) return acc;
+            acc.calories += meal.calories || 0;
+            acc.protein += meal.protein || 0;
+            acc.carbs += meal.carbs || 0;
+            acc.fats += meal.fats || 0;
+            return acc;
+        }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+
+        if (totals.calories > 0) {
+            totals.proteinPercent = Math.round(((totals.protein * 4) / totals.calories) * 100);
+            totals.carbsPercent = Math.round(((totals.carbs * 4) / totals.calories) * 100);
+            totals.fatsPercent = Math.round(((totals.fats * 9) / totals.calories) * 100);
+        } else {
+            totals.proteinPercent = 0;
+            totals.carbsPercent = 0;
+            totals.fatsPercent = 0;
+        }
+        return totals;
+    };
+
+    // --- HTML Template Generators ---
+    const createDashboardCard = (title, iconClass, content, extraClasses = '') => `
+        <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6 shadow-lg ${extraClasses}">
+            <div class="flex items-center mb-4">
+                <i class="fas ${iconClass} text-green-500"></i>
+                <h3 class="text-lg font-semibold text-white ml-3">${title}</h3>
+            </div>
+            ${content}
+        </div>
+    `;
+    const createBiomarkerRangeBar = (value, optimalRange) => {
+      const fullRange = optimalRange.max * 1.5;
+      const position = Math.max(0, Math.min(100, (value / fullRange) * 100));
+      const optimalStart = (optimalRange.min / fullRange) * 100;
+      const optimalWidth = ((optimalRange.max - optimalRange.min) / fullRange) * 100;
+      return `
+        <div>
+            <div class="relative h-2 w-full bg-gray-700 rounded-full">
+                <div class="absolute h-2 rounded-full bg-yellow-600" style="left: 0; width: ${optimalStart}%"></div>
+                <div class="absolute h-2 rounded-full bg-green-600" style="left: ${optimalStart}%; width: ${optimalWidth}%"></div>
+                <div class="absolute h-2 rounded-full bg-red-600" style="left: ${optimalStart + optimalWidth}%; right: 0"></div>
+                <div class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full border-2 border-gray-900" style="left: calc(${position}% - 6px)"></div>
+            </div>
+            <div class="text-xs text-gray-400 text-center mt-1">Optimal: ${optimalRange.min} - ${optimalRange.max}</div>
+        </div>
+    `;
+    };
+    const createBiomarkerRow = (name, value, unit, status, optimalRange) => {
+      const statusStyles = {
+        Optimal: 'bg-green-800 text-green-300',
+        'Needs Improvement': 'bg-yellow-800 text-yellow-300',
+        'At Risk': 'bg-red-800 text-red-300',
+      };
+      return `
+        <div class="grid grid-cols-12 items-center py-3 border-b border-gray-700 last:border-b-0">
+            <div class="col-span-3 text-sm text-gray-300">${name}</div>
+            <div class="col-span-2 text-lg font-bold text-white">${value} <span class="text-sm text-gray-400">${unit}</span></div>
+            <div class="col-span-5">${createBiomarkerRangeBar(value, optimalRange)}</div>
+            <div class="col-span-2 text-right">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusStyles[status]}">${status}</span>
+            </div>
+        </div>
+    `;
+    };
+    const createMealCard = (meal, mealType) => {
+        const today = new Date('2025-08-22T12:00:00Z'); // Hardcoded for consistent demonstration
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(selectedMealPlanDate + 'T12:00:00Z');
+        selectedDate.setHours(0,0,0,0);
+        const isPlanningMode = selectedDate > today;
+
+        let isSelected = false;
+        let isReadonly = false;
+        let onClickHandler = '';
+
+        if (isPlanningMode) {
+            const daySelections = weeklyMealSelections[selectedMealPlanDate] || {};
+            isSelected = daySelections[mealType] === meal.id;
+            onClickHandler = `onclick="handleMealSelect('${mealType}', '${meal.id}')"`;
+        } else {
+            const delivered = deliveredMeals[selectedMealPlanDate] || {};
+            isSelected = delivered[mealType] === meal.id;
+            isReadonly = !isSelected;
+        }
+
+        return `
+            <div class="relative bg-[#2a3b4d] rounded-lg overflow-hidden border-2 ${isSelected ? 'border-green-500' : 'border-transparent'} ${!isReadonly ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'} transition-all group" ${!isReadonly ? onClickHandler : ''}>
+                <img src="${meal.img}" alt="${meal.name}" class="w-full h-32 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/300x200/1f2937/9ca3af?text=Image+Error'">
+                <div class="p-4">
+                    <h4 class="font-semibold text-white">${meal.name}</h4>
+                    <div class="text-xs text-gray-400 mt-2 flex justify-between">
+                        <span>${meal.calories} kcal</span>
+                        <span>P: ${meal.protein}g</span>
+                        <span>C: ${meal.carbs}g</span>
+                        <span>F: ${meal.fats}g</span>
+                    </div>
+                    <div class="border-t border-gray-600 mt-3 pt-3">
+                        <h5 class="text-xs font-bold text-gray-300 mb-1">Key Micronutrients</h5>
+                        <div class="text-xs text-gray-400 flex justify-between">
+                            ${meal.micronutrients.map(micro => `<span>${micro.name}: <strong>${micro.value}</strong></span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                ${isSelected && !isReadonly ? '<div class="absolute top-2 right-2 bg-green-500 rounded-full p-1 shadow-lg"><i class="fas fa-check text-white text-xs"></i></div>' : ''}
+                ${isSelected && isReadonly ? '<div class="absolute top-2 right-2 bg-gray-600 rounded-full p-1 shadow-lg"><i class="fas fa-lock text-white text-xs"></i></div>' : ''}
+            </div>
+        `;
+    };
+     const createProgressCircle = (value, goal, label, unit, colorClass) => {
+        const percentage = goal > 0 ? Math.min(100, (value / goal) * 100) : 0;
+        const circumference = 2 * Math.PI * 40; // radius is 40
+        const offset = circumference - (percentage / 100) * circumference;
+
+        return `
+            <div class="flex flex-col items-center text-center">
+                <div class="relative w-32 h-32">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-gray-700" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                        <circle class="${colorClass}" stroke-width="8" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" transform="rotate(-90 50 50)" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-2xl font-bold text-white">${value}</span>
+                        <span class="text-xs text-gray-400">${unit}</span>
+                    </div>
+                </div>
+                <p class="text-sm font-semibold mt-2">${label}</p>
+                <p class="text-xs text-gray-400">Goal: ${goal} ${unit}</p>
+            </div>
+        `;
+    };
+    // --- Tab Rendering Functions ---
+    const renderDashboard = () => {
+      const healthScoreContent = `
+        <div>
+            <h3 class="text-lg font-semibold text-white mb-2">Overall Health Score</h3>
+            <p class="text-6xl font-bold text-white tracking-tighter">88<span class="text-3xl text-green-300">/100</span></p>
+        </div>
+        <div class="flex items-center justify-center mt-4 text-green-200">
+            <i class="fas fa-arrow-trend-up mr-2"></i>
+            <p>Up 12 points since Jan 2025</p>
+        </div>
+    `;
+      const wearableInsightsContent = `
+        <h3 class="text-md font-semibold text-white mb-3 px-2">Today's Wearable Insights</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-2 gap-3">
+            <div class="bg-[#2a3b4d] p-4 rounded-lg"><div class="flex items-center text-gray-300 mb-2"><i class="fas fa-bed mr-2"></i><span class="text-sm font-medium">Sleep Score</span></div><p class="text-2xl font-bold text-white">92 <span class="text-base font-normal text-gray-400">/ 100</span></p><p class="text-sm font-semibold text-green-500">Optimal</p></div>
+            <div class="bg-[#2a3b4d] p-4 rounded-lg"><div class="flex items-center text-gray-300 mb-2"><i class="fas fa-heart-pulse mr-2"></i><span class="text-sm font-medium">HRV</span></div><p class="text-2xl font-bold text-white">78 <span class="text-base font-normal text-gray-400">ms</span></p><p class="text-sm font-semibold text-green-500">Optimal</p></div>
+            <div class="bg-[#2a3b4d] p-4 rounded-lg"><div class="flex items-center text-gray-300 mb-2"><i class="fas fa-wave-square mr-2"></i><span class="text-sm font-medium">Resting HR</span></div><p class="text-2xl font-bold text-white">52 <span class="text-base font-normal text-gray-400">bpm</span></p><p class="text-sm font-semibold text-green-500">Excellent</p></div>
+            <div class="bg-[#2a3b4d] p-4 rounded-lg"><div class="flex items-center text-gray-300 mb-2"><i class="fas fa-chart-bar mr-2"></i><span class="text-sm font-medium">Activity</span></div><p class="text-2xl font-bold text-white">4.5 <span class="text-base font-normal text-gray-400">/ 6</span></p><p class="text-sm font-semibold text-lime-400">On Track</p></div>
+        </div>
+    `;
+      const biomarkerOverviewContent = `
+        <div class="mb-4"><h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-fire-flame-curved mr-2 text-red-500"></i>Inflammation</h4>${createBiomarkerRow('hs-CRP', 0.8, 'mg/L', 'Optimal', {min: 0, max: 1.0})}${createBiomarkerRow('White Blood Cells', 6.2, 'x10E9/L', 'Optimal', {min: 4.0, max: 11.0})}</div>
+        <div class="mb-4"><h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-droplet mr-2 text-blue-500"></i>Metabolism</h4>${createBiomarkerRow('Glucose', 84, 'mg/dL', 'Optimal', {min: 70, max: 100})}${createBiomarkerRow('HbA1c', 5.1, '%', 'Optimal', {min: 4.0, max: 5.6})}</div>
+        <div class="mb-4"><h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-bolt mr-2 text-yellow-500"></i>Hormonal Health</h4>${createBiomarkerRow('Testosterone', 640, 'ng/dL', 'Optimal', {min: 300, max: 1000})}${createBiomarkerRow('Cortisol (AM)', 15, 'ug/dL', 'Optimal', {min: 6, max: 18})}</div>
+        <div class="mb-4"><h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-shield-halved mr-2 text-indigo-400"></i>Liver Function</h4>${createBiomarkerRow('ALT', 25, 'U/L', 'Optimal', {min: 7, max: 55})}</div>
+        <div><h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-sun mr-2 text-amber-400"></i>Key Nutrients</h4>${createBiomarkerRow('Vitamin D', 45, 'ng/mL', 'Needs Improvement', {min: 50, max: 80})}${createBiomarkerRow('Ferritin (Iron)', 150, 'ng/mL', 'Optimal', {min: 30, max: 300})}</div>
+    `;
+      const foodScoreboardContent = `
+        <p class="text-sm text-gray-400 mb-4">Top food recommendations to optimize your biomarkers.</p>
+        <div class="space-y-3">${foodScoreboardData.map(food => `
+            <div class="bg-[#2a3b4d] p-4 rounded-lg flex items-center">
+                <i class="fas ${food.icon} text-2xl w-8 text-center"></i>
+                <div class="ml-4 flex-grow">
+                    <p class="font-semibold text-white">${food.name}</p>
+                    <p class="text-xs text-gray-400">Improves: ${food.improves.join(', ')}</p>
+                </div>
+                <div class="ml-4 text-right">
+                    <p class="text-2xl font-bold text-green-400">${food.score.toFixed(1)}</p>
+                    <p class="text-xs text-gray-400 -mt-1">Score</p>
+                </div>
+            </div>`).join('')}
+        </div>
+    `;
+      const cgmTrendContent = `<div id="cgm-chart"></div>`;
+      const loggingScheduleContent = `
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white">Logging Schedule</h3>
+                <button onclick="logMealForToday()" class="bg-green-700 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm">Log Today's Meals</button>
+            </div>
+            <div class="grid grid-cols-7 gap-2 text-center font-semibold text-gray-400">
+                ${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => `<span>${day}</span>`).join('')}
+            </div>
+            <div class="grid grid-cols-7 gap-2 mt-2 flex-grow">
+                ${generateWeeklyCalendar()}
+            </div>
+        </div>
+    `;
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const todaysMeals = mealLogDetailData[todayStr] || [];
+    const caloriesConsumed = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
+    const dailyActivityData = { caloriesBurned: 550, caloriesGoal: 2200, consumedGoal: 3000 };
+
+    const nutritionActivityContent = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+            <div>
+                <h4 class="font-semibold text-white mb-4">Nutrition</h4>
+                ${createProgressCircle(caloriesConsumed, dailyActivityData.consumedGoal, 'Kcal Consumed', 'Kcal', 'text-green-500')}
+            </div>
+            <div>
+                <h4 class="font-semibold text-white mb-4">Activity</h4>
+                ${createProgressCircle(dailyActivityData.caloriesBurned, dailyActivityData.caloriesGoal, 'Kcal Burned', 'Kcal', 'text-orange-500')}
+            </div>
+        </div>
+    `;
+
+      return `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-br from-green-800 to-green-900 border border-green-700 rounded-xl p-6 text-center flex flex-col justify-between">${healthScoreContent}</div>
+                    <div class="md:col-span-2 bg-[#1f2937] border border-[#374151] rounded-xl p-4 shadow-lg">${wearableInsightsContent}</div>
+                </div>
+                ${createDashboardCard("Today's Nutrition & Activity", 'fa-chart-pie', nutritionActivityContent)}
+                ${createDashboardCard('Biomarker Health Overview', 'fa-circle-check', biomarkerOverviewContent)}
+            </div>
+            <div class="space-y-6">
+                ${createDashboardCard('Logging Schedule', 'fa-calendar-check', loggingScheduleContent)}
+                ${createDashboardCard('Personalized Food Scoreboard', 'fa-leaf', foodScoreboardContent)}
+                ${createDashboardCard('Continuous Glucose (CGM) Trend - Last 24h', 'fa-arrow-trend-up', cgmTrendContent)}
+            </div>
+        </div>
+    `;
+    };
+    const generateWeeklyCalendar = () => {
+      const today = new Date();
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(today.getDate() - 6);
+      const loggedDates = loggingScheduleData.map(d => d.date.toDateString());
+      let calendarHtml = '';
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(oneWeekAgo);
+        date.setDate(oneWeekAgo.getDate() + i);
+        const isToday = date.toDateString() === today.toDateString();
+        const isLogged = loggedDates.includes(date.toDateString());
+        const dayClass = `flex flex-col items-center justify-center p-2 rounded-lg`;
+        const logClass = isLogged ? 'bg-green-800 text-white' : 'bg-[#2a3b4d] text-gray-400';
+        const logIndicatorHtml = isLogged ? `<div class="w-2 h-2 rounded-full bg-green-400 mt-1"></div>` : '';
+        calendarHtml += `
+            <div class="${dayClass} ${logClass}">
+                <span class="text-sm">${date.getDate()}</span>
+                ${logIndicatorHtml}
+            </div>
+        `;
+      }
+      return calendarHtml;
+    };
+    const renderMeals = () => {
+        const today = new Date('2025-08-22T12:00:00Z'); // Hardcoded for consistent demonstration
+        today.setHours(0, 0, 0, 0);
+
+        const mealWeekCalendar = `
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-white mb-3">Select a Day</h3>
+                <div class="grid grid-cols-7 gap-2 text-center">
+                    ${[...Array(7).keys()].map(i => {
+                        const date = new Date('2025-08-19T12:00:00Z');
+                        date.setDate(date.getDate() + i);
+                        const dateString = date.toISOString().split('T')[0];
+                        const isSelected = dateString === selectedMealPlanDate;
+                        const isFuture = date > today;
+                        
+                        let daySelections;
+                        if (isFuture) {
+                            daySelections = weeklyMealSelections[dateString] || {};
+                        } else {
+                            daySelections = deliveredMeals[dateString] || {};
+                        }
+                        const mealCount = Object.keys(daySelections).length;
+
+                        return `
+                            <div class="p-2 rounded-lg cursor-pointer ${isSelected ? 'bg-green-700' : 'bg-[#2a3b4d]'}" onclick="selectMealPlanDate('${dateString}')">
+                                <p class="font-semibold text-sm">${date.toLocaleDateString('en-US', { weekday: 'short' })}</p>
+                                <p class="text-lg">${date.getDate()}</p>
+                                <div class="flex justify-center mt-1 space-x-1">
+                                    ${mealCount > 0 ? [...Array(mealCount)].map(() => `<span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>`).join('') : '<span class="w-1.5 h-1.5 bg-transparent rounded-full"></span>'}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        const selectedDate = new Date(selectedMealPlanDate + 'T12:00:00Z');
+        selectedDate.setHours(0,0,0,0);
+        const isPlanningMode = selectedDate > today;
+
+        const mealSections = ['breakfast', 'lunch', 'dinner'].map(mealType => `
+            <div>
+                <h3 class="text-xl font-semibold text-white mb-4 capitalize">${mealType} Options</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    ${mealPlanData[mealType].map(meal => createMealCard(meal, mealType)).join('')}
+                </div>
+            </div>
+        `).join('<div class="my-8"></div>');
+
+        const daySelections = isPlanningMode ? weeklyMealSelections[selectedMealPlanDate] : deliveredMeals[selectedMealPlanDate];
+        const mealsForDay = daySelections ? Object.values(daySelections).map(getMealById) : [];
+        const totals = calculateDailyTotals(mealsForDay);
+
+        const totalsSummary = `
+            <div class="mt-8 p-4 bg-[#2a3b4d] rounded-lg">
+                <h4 class="font-semibold text-white mb-2">Daily Totals for ${new Date(selectedMealPlanDate+'T12:00:00Z').toLocaleDateString()}</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-green-400">${totals.calories}</p>
+                        <p class="text-xs text-gray-400">Kcal</p>
+                    </div>
+                     <div>
+                        <p class="text-2xl font-bold text-blue-400">${totals.protein}g</p>
+                        <p class="text-xs text-gray-400">${totals.proteinPercent}% Protein</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-orange-400">${totals.carbs}g</p>
+                        <p class="text-xs text-gray-400">${totals.carbsPercent}% Carbs</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-yellow-400">${totals.fats}g</p>
+                        <p class="text-xs text-gray-400">${totals.fatsPercent}% Fats</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const actionButton = isPlanningMode 
+            ? `<button onclick="confirmFutureSelections()" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Confirm Future Selections</button>`
+            : `<button onclick="logDeliveredDay('${selectedMealPlanDate}')" class="bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Log Delivered Meals</button>`;
+
+        const content = `
+            ${mealWeekCalendar}
+            <div class="space-y-8">${mealSections}</div>
+            ${totalsSummary}
+            <div class="mt-8 text-right">
+                ${actionButton}
+            </div>
+        `;
+        return createDashboardCard('Your Weekly Meal Planner', 'fa-utensils', content);
+    };
+
+    const renderLifestyle = () => {
+        const protocolCards = lifestyleProtocolData.map(item => `
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl shadow-lg overflow-hidden flex flex-col">
+                <img src="${item.imageUrl}" alt="${item.title}" class="w-full h-40 object-cover">
+                <div class="p-6 flex-grow flex flex-col">
+                    <h4 class="font-semibold text-white flex items-center mb-2">
+                        <i class="fas ${item.icon} text-green-400 mr-3"></i>
+                        ${item.title}
+                    </h4>
+                    <p class="text-sm text-gray-400 flex-grow">${item.description}</p>
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div>
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-person-running text-green-500 text-xl"></i>
+                    <h3 class="text-xl font-bold text-white ml-3">Your Lifestyle Protocol</h3>
+                </div>
+                <p class="text-gray-400 mb-6">These recommendations are tailored to your lab results and personal goals to help optimize your health markers.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${protocolCards}
+                </div>
+            </div>
+        `;
+    };
+
+    // --- New Meal Log Rendering ---
+    const renderMealLog = () => {
+      const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+      const firstDayOfMonth = (month, year) => (new Date(year, month, 1).getDay() + 6) % 7; // Monday is 0
+      const daysCount = daysInMonth(currentMonth, currentYear);
+      const firstDay = firstDayOfMonth(currentMonth, currentYear);
+      const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const monthName = new Date(currentYear, currentMonth).toLocaleString('default', {
+        month: 'long'
+      });
+      let calendarDays = '';
+      const today = new Date();
+      const loggedDates = loggingScheduleData.map(d => d.date.toLocaleDateString());
+      // Add empty cells for the start of the month
+      for (let i = 0; i < firstDay; i++) {
+        calendarDays += `<div class="p-2"></div>`;
+      }
+      for (let i = 1; i <= daysCount; i++) {
+        const dayDate = new Date(currentYear, currentMonth, i);
+        const isToday = dayDate.toDateString() === today.toDateString();
+        const isSelected = dayDate.toDateString() === selectedDate;
+        const isLogged = loggedDates.includes(dayDate.toLocaleDateString());
+        const dayClasses = `
+            flex flex-col items-center justify-center p-2 rounded-lg cursor-pointer transition-colors
+            ${isSelected ? 'bg-green-700 text-white font-bold' : ''}
+            ${!isSelected && isToday ? 'ring-2 ring-green-500' : ''}
+            ${isLogged && !isSelected ? 'bg-green-900 text-green-200' : ''}
+            ${!isLogged && !isSelected ? 'bg-[#2a3b4d] hover:bg-[#374151]' : ''}
+        `;
+        const mealCountForDay = (mealLogDetailData[dayDate.toISOString().split('T')[0]] || []).length;
+        const logIndicators = mealCountForDay > 0 ? `
+            <div class="flex space-x-1 mt-1">
+                ${'<span class="w-1 h-1 rounded-full bg-green-400"></span>'.repeat(Math.min(mealCountForDay, 3))}
+            </div>
+        ` : '';
+        calendarDays += `
+            <div class="${dayClasses}" onclick="handleDateSelect('${dayDate.toISOString()}')">
+                <span>${i}</span>
+                ${logIndicators}
+            </div>
+        `;
+      }
+      const mealsForSelectedDay = (mealLogDetailData[new Date(selectedDate).toISOString().split('T')[0]] || []).map(m => getMealByName(m.name));
+      const totals = calculateDailyTotals(mealsForSelectedDay);
+
+      const totalsSummary = `
+            <div class="mt-4 p-4 bg-[#2a3b4d] rounded-lg">
+                <h4 class="font-semibold text-white mb-2">Totals for Logged Meals</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <p class="text-2xl font-bold text-green-400">${totals.calories}</p>
+                        <p class="text-xs text-gray-400">Kcal</p>
+                    </div>
+                     <div>
+                        <p class="text-2xl font-bold text-blue-400">${totals.protein}g</p>
+                        <p class="text-xs text-gray-400">${totals.proteinPercent}% Protein</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-orange-400">${totals.carbs}g</p>
+                        <p class="text-xs text-gray-400">${totals.carbsPercent}% Carbs</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-yellow-400">${totals.fats}g</p>
+                        <p class="text-xs text-gray-400">${totals.fatsPercent}% Fats</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+      const mealDetailsHtml = mealsForSelectedDay.length > 0 ?
+        mealsForSelectedDay.map(meal => `
+            <div class="bg-[#2a3b4d] p-4 rounded-lg flex items-center mb-2">
+                <i class="fas fa-utensils text-green-400 text-xl mr-4"></i>
+                <div>
+                    <p class="font-semibold capitalize text-white">${meal.name}</p>
+                    <p class="text-sm text-gray-400">${meal.calories} kcal</p>
+                </div>
+            </div>
+        `).join('') :
+        `<div class="bg-[#2a3b4d] p-6 rounded-lg text-center text-gray-400">No meals logged for this day.</div>`;
+      
+      const selectedLogDate = new Date(selectedDate);
+      selectedLogDate.setHours(0,0,0,0);
+      const todayForLog = new Date();
+      todayForLog.setHours(0,0,0,0);
+      const isFutureDate = selectedLogDate > todayForLog;
+
+      const logFromPlanButton = `
+          <button 
+              onclick="logPlannedMealsForSelectedDate()" 
+              class="w-full mt-4 bg-green-700 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center text-lg ${isFutureDate ? 'opacity-50 cursor-not-allowed' : ''}"
+              ${isFutureDate ? 'disabled' : ''}
+          >
+              <i class="fas fa-plus mr-2"></i>
+              Log Meals from Plan
+          </button>
+      `;
+
+      const content = `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="changeMonth(-1)" class="text-white hover:text-green-500 transition"><i class="fas fa-chevron-left"></i></button>
+                    <h3 class="text-xl font-bold text-white">${monthName} ${currentYear}</h3>
+                    <button onclick="changeMonth(1)" class="text-white hover:text-green-500 transition"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div class="grid grid-cols-7 gap-2 text-center text-sm font-semibold text-gray-400 mb-2">
+                    ${daysOfWeek.map(day => `<span>${day}</span>`).join('')}
+                </div>
+                <div class="grid grid-cols-7 gap-2">
+                    ${calendarDays}
+                </div>
+                <p class="text-xs text-center text-gray-500 mt-4">Tap on a date to view logged meals.</p>
+            </div>
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">Meals Logged on ${new Date(selectedDate).toDateString().split(' ').slice(0, 3).join(' ')}</h3>
+                <div class="max-h-60 overflow-y-auto pr-2">${mealDetailsHtml}</div>
+                ${totalsSummary}
+                ${logFromPlanButton}
+            </div>
+        </div>
+    `;
+      return createDashboardCard('Your Meal Log', 'fa-calendar-alt', content);
+    };
+
+    const renderWearables = () => {
+        const createWearableChartCard = (metric, title, icon, chartId, color, unit) => {
+            const data = wearablesData[metric];
+            return `
+                <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center">
+                            <i class="fas ${icon} text-${color}-500 text-lg"></i>
+                            <h3 class="text-lg font-semibold text-white ml-3">${title}</h3>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-white">${data.average}</span>
+                            <span class="text-sm text-gray-400">${unit}</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4 ml-8">7-day average</p>
+                    <div id="${chartId}" class="w-full h-40"></div>
+                </div>
+            `;
+        };
+        const sleepCard = () => {
+             return `
+                <div class="lg:col-span-2 bg-[#1f2937] border border-[#374151] rounded-xl p-6 shadow-lg">
+                     <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center">
+                            <i class="fas fa-bed text-indigo-500 text-lg"></i>
+                            <h3 class="text-lg font-semibold text-white ml-3">Sleep Analysis</h3>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-bold text-white">${wearablesData.sleep.average}</span>
+                            <span class="text-sm text-gray-400">avg</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-start space-x-4 text-xs text-gray-400 mb-4 ml-8">
+                        <span><i class="fas fa-circle text-red-400 mr-1"></i> Awake</span>
+                        <span><i class="fas fa-circle text-cyan-400 mr-1"></i> REM</span>
+                        <span><i class="fas fa-circle text-blue-500 mr-1"></i> Light</span>
+                        <span><i class="fas fa-circle text-indigo-600 mr-1"></i> Deep</span>
+                    </div>
+                    <div id="sleep-chart" class="w-full h-40"></div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                ${createWearableChartCard('steps', 'Steps', 'fa-shoe-prints', 'steps-chart', 'green', 'steps')}
+                ${createWearableChartCard('calories', 'Calories Burned', 'fa-fire', 'calories-chart', 'orange', 'kcal')}
+                ${sleepCard()}
+                ${createWearableChartCard('heartRate', 'Resting Heart Rate', 'fa-heart-pulse', 'hr-chart', 'red', 'bpm')}
+            </div>
+        `;
+    };
+    
+    const renderTimeline = () => {
+        const chartsHtml = `
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6 shadow-lg mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">Biomarker Progression</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-green-400 mb-2 text-center">Health Score</h4>
+                        <div id="health-score-timeline-chart"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-red-400 mb-2 text-center">hs-CRP (Lower is Better)</h4>
+                        <div id="hscrp-timeline-chart"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-amber-400 mb-2 text-center">Vitamin D</h4>
+                        <div id="vitd-timeline-chart"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-blue-400 mb-2 text-center">Testosterone</h4>
+                        <div id="testosterone-timeline-chart"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const timelineItems = timelineData.map((item, index) => {
+            return `
+                <div class="relative flex items-start space-x-4 py-6">
+                    <div class="flex flex-col items-center self-stretch">
+                        <div class="w-6 h-6 bg-${item.color}-600 rounded-full flex items-center justify-center ring-8 ring-[#1f2937] z-10 shrink-0">
+                            <i class="fas ${item.icon} text-white text-xs"></i>
+                        </div>
+                        ${index < timelineData.length - 1 ? '<div class="w-0.5 h-full bg-gray-700 mt-2"></div>' : ''}
+                    </div>
+
+                    <div class="flex-1">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                            <span class="text-xs font-semibold uppercase text-white bg-gray-800 border border-gray-700 rounded-full px-3 py-1 self-start">${item.date}</span>
+                            <h4 class="text-xl font-bold text-white mt-2 sm:mt-0">${item.title}</h4>
+                        </div>
+                        <div class="bg-[#2a3b4d] rounded-lg p-4 mt-2">
+                            <p class="text-sm text-gray-300">${item.summary}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `${chartsHtml}
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6 shadow-lg">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-chart-gantt text-green-500"></i>
+                    <h3 class="text-lg font-semibold text-white ml-3">Your Health Journey Milestones</h3>
+                </div>
+                <div class="relative">
+                    ${timelineItems}
+                </div>
+            </div>
+        `;
+    };
+
+    const renderReportSummary = () => {
+        const createAccordionItem = (id, title, icon, content) => `
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl overflow-hidden">
+                <button class="accordion-header w-full flex justify-between items-center p-5 text-left" onclick="toggleAccordion('${id}')">
+                    <div class="flex items-center">
+                        <i class="fas ${icon} text-green-500 text-xl w-8"></i>
+                        <h3 class="text-lg font-semibold text-white ml-4">${title}</h3>
+                    </div>
+                    <i id="accordion-icon-${id}" class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                </button>
+                <div id="accordion-content-${id}" class="accordion-content px-5 pb-5">
+                    ${content}
+                </div>
+            </div>
+        `;
+
+        const createTraitCard = (title, gene, variant, result, description, icon, color) => `
+            <div class="bg-[#2a3b4d] p-4 rounded-lg">
+                <div class="flex items-start">
+                    <div class="w-10 h-10 rounded-full bg-${color}-900/50 flex items-center justify-center mr-4 shrink-0">
+                        <i class="fas ${icon} text-${color}-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white">${title}</h4>
+                        <p class="text-sm font-bold text-${color}-400">${result}</p>
+                        <p class="text-xs text-gray-400 mt-1">${description}</p>
+                        <p class="text-xs text-gray-500 mt-1">Gene: ${gene} (${variant})</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const lactoseTraitCard = `
+             <div class="bg-[#2a3b4d] p-4 rounded-lg">
+                <div class="flex items-start">
+                    <div class="w-10 h-10 rounded-full bg-yellow-900/50 flex items-center justify-center mr-4 shrink-0">
+                        <i class="fas fa-cheese text-yellow-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-white">Lactose Handling</h4>
+                        <p class="text-sm font-bold text-yellow-400">Lactose Tolerant (Genetic)</p>
+                        <p class="text-xs text-gray-400 mt-1">Your genetics show you are likely lactose tolerant. However, your reported milk allergy means you should continue to avoid dairy, as the issue may be with milk proteins (like casein or whey) rather than lactose.</p>
+                        <p class="text-xs text-gray-500 mt-1">Gene: LCT (rs4988235)</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const createInsightCard = (title, content, icon, color) => `
+            <div class="bg-[#2a3b4d] p-4 rounded-lg border-l-4 border-${color}-500">
+                <h4 class="font-semibold text-white flex items-center mb-2"><i class="fas ${icon} text-${color}-400 mr-2"></i>${title}</h4>
+                <p class="text-sm text-gray-300">${content}</p>
+            </div>
+        `;
+
+        // Content for each category
+        const blueprintContent = `
+            <p class="text-sm text-gray-400 mb-4 border-b border-gray-600 pb-2">This section reveals your innate personality and lifestyle tendencies, all derived from your <strong class="text-green-400">DNA analysis</strong>.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${createTraitCard('Chronotype', 'PER1', 'rs12345 (A/G)', 'Morning Person', 'Your genetics suggest you are more likely to be productive and energetic in the morning.', 'fa-sun', 'yellow')}
+                ${createTraitCard('Stress Response', 'COMT', 'rs54321 (G/G)', 'Resilient', 'You have the "warrior" gene, suggesting a more resilient response to stress. Your current Cortisol levels are optimal.', 'fa-shield-alt', 'green')}
+                ${createTraitCard('Caffeine Metabolism', 'CYP1A2', 'rs98765 (A/A)', 'Fast Metabolizer', 'Your body processes caffeine quickly, so you may feel its effects for a shorter duration.', 'fa-coffee', 'orange')}
+                ${createTraitCard('Alcohol Metabolism', 'ALDH2', 'rs13579 (G/A)', 'Slower Metabolism', 'You may be more prone to flushing and other side effects from alcohol due to slower processing.', 'fa-wine-glass', 'red')}
+                ${createTraitCard('Leadership Potential', 'DRD4-7R', '7R allele', 'Adventurous & Risk-Taker', 'This allele is associated with traits like novelty-seeking and risk-taking, often found in leaders.', 'fa-user-tie', 'purple')}
+                ${createTraitCard('Empathy', 'OXTR', 'rs53576 (A/A)', 'Enhanced Empathy', 'This variant is linked to higher levels of empathy and social bonding.', 'fa-hand-holding-heart', 'pink')}
+                ${createTraitCard('Pain Sensitivity', 'SCN9A', 'rs6746030 (G/T)', 'Higher Pain Threshold', 'You likely have a higher tolerance for pain compared to the average person.', 'fa-bolt', 'teal')}
+                ${createTraitCard('Novelty Seeking', 'DRD4-Ex3', '4R/4R', 'Prefers Familiarity', 'Your genetic makeup suggests a preference for familiar experiences over seeking constant novelty.', 'fa-map-signs', 'indigo')}
+                ${createTraitCard('Personality', 'DRD4', 'rs67890 (C/T)', 'Balanced Introvert/Extrovert', 'You carry a gene variant common in individuals who are adaptable in social situations.', 'fa-users', 'blue')}
+            </div>
+        `;
+        const performanceContent = `
+            <p class="text-sm text-gray-400 mb-4 border-b border-gray-600 pb-2">This category decodes your genetic potential for physical activities, based on your unique <strong class="text-green-400">DNA blueprint</strong>.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${createTraitCard('Fitness Advantage', 'ACTN3', 'rs1815739 (C/C)', 'Power/Strength', 'You have the "sprint gene," giving you a genetic advantage in power and strength-based activities.', 'fa-dumbbell', 'red')}
+                ${createTraitCard('Recovery Potential', 'IL-6', 'rs1800795 (G/G)', 'Standard Recovery', 'Your genetic profile for inflammation suggests a typical recovery response to exercise.', 'fa-battery-half', 'blue')}
+                ${createTraitCard('Peak Performance Time', 'PER1', 'rs12345 (A/G)', 'Morning Peak', 'Aligns with your chronotype; your body is primed for peak physical performance earlier in the day.', 'fa-clock', 'yellow')}
+                ${createTraitCard('Injury Risk (Tendons)', 'COL1A1', 'rs1107946 (T/T)', 'Lower Risk', 'Your genes suggest stronger collagen formation, indicating a lower predisposition to tendon injuries.', 'fa-band-aid', 'green')}
+                ${createTraitCard('Aerobic Potential (VO2max)', 'ACE', 'rs4646994 (I/I)', 'Enhanced Endurance', 'The "endurance allele" suggests a higher genetic potential for aerobic fitness. Your blood markers support a current high VO2max.', 'fa-lungs', 'cyan')}
+            </div>
+        `;
+        const metabolicContent = `
+            <p class="text-sm text-gray-400 mb-4 border-b border-gray-600 pb-2">Discover your body's unique way of handling food, derived from <strong class="text-green-400">DNA analysis</strong>.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                ${createTraitCard('Optimal Fuel Mix', 'FTO', 'rs9939609 (A/T)', 'Balanced Macronutrients', 'You have a common variant in the FTO gene; a balanced diet is likely most effective for you.', 'fa-balance-scale', 'green')}
+                ${lactoseTraitCard}
+                ${createTraitCard('Gluten Sensitivity Risk', 'HLA-DQ', 'DQA1*05', 'Lower Genetic Risk', 'You do not carry the primary gene variants associated with Celiac disease or high gluten sensitivity.', 'fa-bread-slice', 'orange')}
+                ${createTraitCard('Shellfish Allergy', 'CD207', 'rs78901', 'Slightly Increased Tendency', 'You have a common variant that is slightly associated with shellfish allergies. Monitor for symptoms.', 'fa-shrimp', 'red')}
+                ${createTraitCard('Egg Allergy', 'TET2', 'rs12456', 'Typical Tendency', 'Your genetic markers do not show an increased predisposition to egg allergies.', 'fa-egg', 'yellow')}
+                ${createTraitCard('Intermittent Fasting', 'CLOCK', 'rs1801260 (C/T)', 'Likely Effective', 'Your circadian rhythm genes suggest that intermittent fasting could be a beneficial strategy for you.', 'fa-stopwatch', 'blue')}
+             </div>
+        `;
+        const internalDashboardContent = `
+            <p class="text-sm text-gray-400 mb-4 border-b border-gray-600 pb-2">This is a snapshot of your current health status based on <strong class="text-green-400">lab results from your blood work</strong>. It shows how your lifestyle is affecting your body in real-time.</p>
+            <div class="space-y-4">
+                <div class="bg-[#2a3b4d] p-4 rounded-lg">
+                    <h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-fire-flame-curved mr-2 text-red-500"></i>Inflammation</h4>
+                    ${createBiomarkerRow('hs-CRP', 0.8, 'mg/L', 'Optimal', {min: 0, max: 1.0})}
+                    ${createBiomarkerRow('White Blood Cells', 6.2, 'x10E9/L', 'Optimal', {min: 4.0, max: 11.0})}
+                    ${createBiomarkerRow('Ferritin', 150, 'ng/mL', 'Optimal', {min: 30, max: 300})}
+                </div>
+                <div class="bg-[#2a3b4d] p-4 rounded-lg">
+                    <h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-droplet mr-2 text-blue-500"></i>Metabolism & Heart Health</h4>
+                    ${createBiomarkerRow('Glucose', 84, 'mg/dL', 'Optimal', {min: 70, max: 100})}
+                    ${createBiomarkerRow('HbA1c', 5.1, '%', 'Optimal', {min: 4.0, max: 5.6})}
+                    ${createBiomarkerRow('Total Cholesterol', 180, 'mg/dL', 'Optimal', {min: 125, max: 200})}
+                    ${createBiomarkerRow('HDL Cholesterol', 65, 'mg/dL', 'Optimal', {min: 40, max: 80})}
+                    ${createBiomarkerRow('LDL Cholesterol', 95, 'mg/dL', 'Optimal', {min: 0, max: 100})}
+                </div>
+                <div class="bg-[#2a3b4d] p-4 rounded-lg">
+                    <h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-bolt mr-2 text-yellow-500"></i>Hormone Balance</h4>
+                    ${createBiomarkerRow('Testosterone', 640, 'ng/dL', 'Optimal', {min: 300, max: 1000})}
+                    ${createBiomarkerRow('DHEA-S', 280, 'ug/dL', 'Optimal', {min: 140, max: 400})}
+                    ${createBiomarkerRow('SHBG', 45, 'nmol/L', 'Optimal', {min: 18, max: 54})}
+                    ${createBiomarkerRow('Cortisol (AM)', 15, 'ug/dL', 'Optimal', {min: 6, max: 18})}
+                </div>
+                 <div class="bg-[#2a3b4d] p-4 rounded-lg">
+                    <h4 class="font-semibold text-white flex items-center mb-2"><i class="fas fa-sun mr-2 text-amber-400"></i>Key Vitamins & Minerals</h4>
+                    ${createBiomarkerRow('Vitamin D', 45, 'ng/mL', 'Needs Improvement', {min: 50, max: 80})}
+                    ${createBiomarkerRow('Vitamin B12', 600, 'pg/mL', 'Optimal', {min: 200, max: 900})}
+                    ${createBiomarkerRow('Magnesium', 2.1, 'mg/dL', 'Optimal', {min: 1.7, max: 2.2})}
+                </div>
+            </div>
+        `;
+        const actionPlanContent = `
+            <p class="text-sm text-gray-400 mb-4 border-b border-gray-600 pb-2">This section synthesizes everything, combining insights from your <strong class="text-green-400">DNA and lab results</strong> to provide clear, actionable recommendations.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${createInsightCard('Most Impactful Diet Change', 'Increase Vitamin D intake. Your blood test shows you are suboptimal, which is crucial for immunity and hormone health. Your DNA also shows a predisposition to lower levels. Prioritize safe sun exposure and consider a D3/K2 supplement.', 'fa-sun', 'yellow')}
+                ${createInsightCard('Most Efficient Exercise', 'Leverage your ACTN3 power/strength advantage with resistance training 2-3x per week. Combine this with Zone 2 cardio on other days to optimize your ACE gene endurance potential for overall cardiovascular health.', 'fa-dumbbell', 'red')}
+                ${createInsightCard('DNA Risk vs. Blood Reality (Success Story!)', 'Your DNA (ALDH2) suggests slower alcohol metabolism, but your liver enzymes (ALT/AST) in your blood are perfect. This indicates your current lifestyle (moderate to no alcohol intake) is successfully overriding a genetic predisposition.', 'fa-glass-cheers', 'green')}
+                ${createInsightCard('DNA Low Risk vs. Blood Reality (Warning!)', 'Your genes show a lower risk for tendon injury, but your hs-CRP (inflammation marker) was slightly elevated last quarter. This suggests a lifestyle factor (perhaps overtraining or diet) was causing inflammation, overriding your genetic protection. Your current hs-CRP is now optimal - great job addressing it!', 'fa-exclamation-triangle', 'orange')}
+                ${createInsightCard('Key Biomarkers to Track', 'Based on your full profile, your top 5 biomarkers to monitor are: 1. **hs-CRP** (Inflammation), 2. **HbA1c** (Long-term blood sugar), 3. **Vitamin D** (Nutrient status), 4. **Testosterone** (Hormonal health), 5. **ALT** (Liver function).', 'fa-crosshairs', 'blue')}
+            </div>
+             <div class="mt-6 bg-[#2a3b4d] rounded-xl overflow-hidden">
+                 <div class="flex items-center p-5 bg-[#374151]">
+                    <i class="fas fa-user-doctor text-green-500 text-xl w-8"></i>
+                    <h3 class="text-lg font-semibold text-white ml-4">🩺 Doctor's Summary</h3>
+                </div>
+                <div class="p-5 text-gray-300 text-sm space-y-3">
+                    <p>Your current fitness protocol, which combines strength training and HIIT, is perfectly aligned with your genetic makeup and your stated goals for muscle gain and athletic performance. The low-carb, dairy-free dietary approach is clearly working well to keep your inflammation markers low.</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><strong>Primary Focus:</strong> Your Vitamin D level is the most immediate and actionable item. Given your genetic tendency for lower levels, consistent supplementation with D3/K2 is highly recommended. We will re-test in 3 months.</li>
+                        <li><strong>Dietary Note:</strong> Your reported milk allergy should be strictly adhered to, despite your genetic tolerance for lactose. The focus on whole, unprocessed, low-carb foods is clearly benefiting your gut microbiome and inflammation markers (hs-CRP).</li>
+                        <li><strong>Fitness:</strong> You're responding perfectly to the current strength and cardio protocol. Your ACTN3 and ACE gene combination means this balanced approach is ideal for your goals. No changes are recommended at this time. Keep up the great work.</li>
+                    </ul>
+                    <p>We will continue to monitor your key biomarkers (hs-CRP, HbA1c, Vitamin D) in the next lab test to ensure you stay on this optimal path.</p>
+                </div>
+            </div>
+        `;
+        
+
+        return `
+            <div class="space-y-4">
+                ${createAccordionItem('blueprint', '🧬 Your Bio-Blueprint', 'fa-dna', blueprintContent)}
+                ${createAccordionItem('performance', '🏋️ Your Performance DNA', 'fa-dumbbell', performanceContent)}
+                ${createAccordionItem('metabolic', '🍎 Your Metabolic Code', 'fa-apple-alt', metabolicContent)}
+                ${createAccordionItem('dashboard', '🩸 Your Internal Dashboard', 'fa-vial', internalDashboardContent)}
+                ${createAccordionItem('action_plan', '🎯 Your Action Plan & Doctor\'s Summary', 'fa-bullseye', actionPlanContent)}
+            </div>
+        `;
+    };
+    
+    const renderProfile = () => {
+    return `
+        <div class="bg-[#1f2937] border border-[#374151] rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-700 bg-gradient-to-r from-[#2a3b4d] to-[#1f2937]">
+                <div class="flex flex-col md:flex-row justify-between md:items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white flex items-center">
+                            Must Maghraby
+                            <span class="ml-3 text-sm bg-green-700 text-white px-3 py-1 rounded-md font-medium">Primary Profile</span>
+                        </h2>
+                        <p class="text-sm text-gray-400 mt-1">Build your personalized nutrition profile for AI-powered meal planning</p>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4 md:mt-0 bg-[#1f2937] p-2 rounded-lg border border-gray-700">
+                        <span class="text-sm text-gray-400">Metric</span>
+                        <label class="relative inline-block w-12 h-6">
+                            <input type="checkbox" class="opacity-0 w-0 h-0" checked>
+                            <span class="absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-green-700 rounded-full transition-colors">
+                                <span class="absolute h-4 w-4 left-7 bottom-1 bg-white rounded-full transition-transform"></span>
+                            </span>
+                        </label>
+                        <span class="text-sm text-gray-400">Imperial</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <h3 class="profile-section-title">Basic Information</h3>
+                    </div>
+                    <div class="p-1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                            <div>
+                                <label class="profile-label">Age <span class="text-red-500 ml-1">*</span></label>
+                                <input type="number" value="38" class="profile-input w-24">
+                            </div>
+                            <div>
+                                <label class="profile-label">Gender <span class="text-red-500 ml-1">*</span></label>
+                                <select class="profile-select"><option>Male</option><option>Female</option></select>
+                            </div>
+                            <div>
+                                <label class="profile-label">Height (ft/in) <span class="text-red-500 ml-1">*</span></label>
+                                <div class="flex gap-2">
+                                    <input type="number" value="6" class="profile-input w-20">
+                                    <input type="number" value="4" class="profile-input w-20">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="profile-label">Weight (lbs) <span class="text-red-500 ml-1">*</span></label>
+                                <input type="number" value="198" class="profile-input w-24">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <h3 class="profile-section-title">Activity & Fitness</h3>
+                    </div>
+                     <div class="p-1 space-y-5">
+                        <div>
+                           <label class="profile-label">Activity Level</label>
+                           <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                              <label class="profile-radio-label"><input type="radio" name="activity_level" class="mr-3 mt-1"><div><div class="font-medium text-white">Sedentary</div><div class="text-xs text-gray-400">Little to no exercise</div></div></label>
+                              <label class="profile-radio-label"><input type="radio" name="activity_level" class="mr-3 mt-1"><div><div class="font-medium text-white">Lightly Active</div><div class="text-xs text-gray-400">Exercise 1-3 days/week</div></div></label>
+                              <label class="profile-radio-label"><input type="radio" name="activity_level" class="mr-3 mt-1"><div><div class="font-medium text-white">Moderately Active</div><div class="text-xs text-gray-400">Exercise 3-5 days/week</div></div></label>
+                              <label class="profile-radio-label checked"><input type="radio" name="activity_level" checked class="mr-3 mt-1"><div><div class="font-medium text-white">Very Active</div><div class="text-xs text-gray-400">Exercise 6-7 days/week</div></div></label>
+                              <label class="profile-radio-label"><input type="radio" name="activity_level" class="mr-3 mt-1"><div><div class="font-medium text-white">Extremely Active</div><div class="text-xs text-gray-400">Physical job or 2x daily training</div></div></label>
+                           </div>
+                        </div>
+                        <div>
+                            <label class="profile-label">Types of Exercise</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">Weight Training</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">HIIT</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">Swimming</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Cardio</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Yoga</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Running</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">CrossFit</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">Martial Arts</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">Team Sports</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">Walking</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="profile-label">Fitness Goals</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <label class="flex items-center text-sm"><input type="checkbox" checked class="mr-2">Muscle Gain</label>
+                                <label class="flex items-center text-sm"><input type="checkbox" checked class="mr-2">Maintain Weight</label>
+                                <label class="flex items-center text-sm"><input type="checkbox" checked class="mr-2">Increase Strength</label>
+                                <label class="flex items-center text-sm"><input type="checkbox" checked class="mr-2">Better Health</label>
+                                <label class="flex items-center text-sm"><input type="checkbox" checked class="mr-2">Athletic Performance</label>
+                                <label class="flex items-center text-sm"><input type="checkbox" class="mr-2">Weight Loss</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <h3 class="profile-section-title">Dietary Restrictions & Allergies</h3>
+                    </div>
+                     <div class="p-1 space-y-5">
+                         <div>
+                            <label class="profile-label">Allergies & Intolerances</label>
+                            <input type="text" value="Peanuts, Shellfish, Eggs" class="profile-input">
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Milk</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" class="hidden">Peanuts</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Treen Nuts</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Soy</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Wheat</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Fish</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" class="hidden">Shellfish</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Sesame</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" checked class="hidden">Eggs</label>
+                                </div>
+                           <div>
+                           <label class="profile-label">Dietary Preferences</label>
+                           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                              <label class="profile-checkbox-label checked"><input type="checkbox" checked class="mr-2"><span class="mr-2">🥛</span><span class="text-sm font-medium text-white">Dairy Free</span></label>
+                              <label class="profile-checkbox-label checked"><input type="checkbox" checked class="mr-2"><span class="mr-2">🍞</span><span class="text-sm font-medium text-white">Low Carb</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">🌱</span><span class="text-sm font-medium text-white">Vegan</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">🌾</span><span class="text-sm font-medium text-white">Gluten Free</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">🥑</span><span class="text-sm font-medium text-white">Keto</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">🐟</span><span class="text-sm font-medium text-white">Pescatarian</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">🫒</span><span class="text-sm font-medium text-white">Mediterranean</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">💉</span><span class="text-sm font-medium text-white">Diabetic Friendly</span></label>
+                              <label class="profile-checkbox-label"><input type="checkbox" class="mr-2"><span class="mr-2">30</span><span class="text-sm font-medium text-white">Whole30</span></label>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <h3 class="profile-section-title">Food Preferences & Cuisines</h3>
+                    </div>
+                    <div class="p-1 space-y-5">
+                        <div>
+                            <label class="profile-label">Favorite Cuisines</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="profile-tag-label checked"><input type="checkbox" class="hidden">Italian</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Mexican</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Chinese</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Japanese</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Thai</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Indian</label>
+                                <label class="profile-tag-label checked"><input type="checkbox" class="hidden">Mediterranean</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">French</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">American</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Greek</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Korean</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Vietnamese</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Spanish</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Middle Eastern</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Ethiopian</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Caribbean</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Brazilian</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="profile-label">Flavor Preferences</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Sweet</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Salty</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Spicy</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Sour</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Umami</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Bitter</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Mild</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Bold</label>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                             <div>
+                                <label class="profile-label">Foods You Love</label>
+                                <input type="text" placeholder="e.g., Salmon, Avocado, Berries" class="profile-input">
+                            </div>
+                            <div>
+                                <label class="profile-label">Foods to Avoid</label>
+                                <input type="text" placeholder="e.g., Cilantro, Mushrooms" class="profile-input">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="profile-label">Meal Planning Preferences</label>
+                            <textarea placeholder="e.g., Prefer quick 30-minute meals, enjoy batch cooking on weekends, no red meat on weekdays..." class="profile-textarea h-24"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <h3 class="profile-section-title">Health & Medical Information</h3>
+                    </div>
+                    <div class="p-1 space-y-5">
+                        <div class="bg-yellow-900/50 border border-yellow-700 text-yellow-200 text-sm rounded-lg p-3">
+                             ⚠️ This information helps create safer, more personalized meal plans. Always consult healthcare providers for medical advice.
+                        </div>
+                        <div>
+                            <label class="profile-label">Health Conditions (Optional)</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Diabetes Type 1</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Diabetes Type 2</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">High Blood Pressure</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">High Cholesterol</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Heart Disease</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">PCOS</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Thyroid Issues</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">IBS</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Crohns Disease</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Celiac Disease</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Kidney Disease</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Liver Disease</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Gout</label>
+                                <label class="profile-tag-label"><input type="checkbox" class="hidden">Arthritis</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="profile-label">Supplements & Vitamins (Optional)</label>
+                            <input type="text" placeholder="e.g., Vitamin D3, Magnesium, Omega-3" class="profile-input">
+                        </div>
+                        <div>
+                            <label class="profile-label">Additional Notes</label>
+                            <textarea placeholder="Any other relevant health information or notes..." class="profile-textarea h-24"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <h3 class="profile-section-title">Macro Nutrient Targets</h3>
+                    </div>
+                    <div class="p-1">
+                      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="bg-green-900/50 border-2 border-green-700 rounded-lg p-4">
+                           <h5 class="font-semibold text-white">🔥 Calories Kcal</h5>
+                           <p class="text-xs text-gray-400 mb-2">Total daily energy intake</p>
+                           <input type="number" value="3000" class="profile-input w-24">
+                        </div>
+                        <div class="bg-green-900/50 border-2 border-green-700 rounded-lg p-4">
+                           <h5 class="font-semibold text-white">💪 Protein g</h5>
+                           <p class="text-xs text-gray-400 mb-2">For muscle maintenance</p>
+                           <input type="number" value="150" class="profile-input w-24">
+                        </div>
+                        <div class="bg-[#2a3b4d] border-2 border-gray-600 rounded-lg p-4">
+                           <h5 class="font-semibold text-white">🥑 Fat g</h5>
+                           <p class="text-xs text-gray-400 mb-2">Essential for hormones</p>
+                           <input type="number" value="65" disabled class="profile-input w-24 bg-gray-800 cursor-not-allowed">
+                        </div>
+                        <div class="bg-[#2a3b4d] border-2 border-gray-600 rounded-lg p-4">
+                           <h5 class="font-semibold text-white">🥦 Fiber g</h5>
+                           <p class="text-xs text-gray-400 mb-2">For digestive health</p>
+                           <input type="number" value="65" disabled class="profile-input w-24 bg-gray-800 cursor-not-allowed">
+                      </div>
+                      <div class="bg-[#2a3b4d] border-2 border-gray-600 rounded-lg p-4">
+                           <h5 class="font-semibold text-white">🌾 Carbohydrates g</h5>
+                           <p class="text-xs text-gray-400 mb-2">Primary energy source</p>
+                           <input type="number" value="65" disabled class="profile-input w-24 bg-gray-800 cursor-not-allowed">
+                      </div>
+                    </div>
+                </div>
+
+
+                <div class="flex justify-end items-center p-4 bg-[#2a3b4d] rounded-lg mt-8">
+                    <button onclick="showMessage('Profile Saved Successfully!')" class="bg-green-700 hover:bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Save Profile</button>
+                </div>
+            </div>
+        </div>
+    `;
+};
+    
+    // --- Chart Rendering ---
+    const renderCgmChart = () => {
+      const options = {
+        chart: {
+          type: 'area',
+          height: 200,
+          toolbar: {
+            show: false
+          },
+          zoom: {
+            enabled: false
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 2,
+          colors: ['#22c55e']
+        },
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.7,
+            opacityTo: 0.1,
+            stops: [0, 100]
+          }
+        },
+        series: [{
+          name: 'Glucose',
+          data: cgmData.map(d => d.glucose)
+        }],
+        xaxis: {
+          categories: cgmData.map(d => d.time),
+          labels: {
+            style: {
+              colors: '#9ca3af',
+              fontSize: '12px'
+            }
+          },
+          axisBorder: {
+            show: false
+          },
+          axisTicks: {
+            show: false
+          }
+        },
+        yaxis: {
+          min: 60,
+          max: 160,
+          labels: {
+            style: {
+              colors: '#9ca3af',
+              fontSize: '12px'
+            },
+            formatter: (val) => `${val} mg/dL`
+          }
+        },
+        grid: {
+          borderColor: '#374151',
+          strokeDashArray: 3
+        },
+        tooltip: {
+          theme: 'dark'
+        }
+      };
+      const chart = new ApexCharts(document.querySelector("#cgm-chart"), options);
+      chart.render();
+    };
+
+    const renderAllWearableCharts = () => {
+        const defaultAreaOptions = {
+            chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.1, stops: [0, 100] } },
+            xaxis: { categories: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'], labels: { style: { colors: '#9ca3af' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+            yaxis: { labels: { style: { colors: '#9ca3af' } } },
+            grid: { borderColor: '#374151', strokeDashArray: 3 },
+            tooltip: { theme: 'dark' },
+        };
+
+        // Steps Chart
+        const stepsChart = new ApexCharts(document.querySelector("#steps-chart"), {
+            ...defaultAreaOptions,
+            series: [{ name: 'Steps', data: wearablesData.steps.data }],
+            colors: ['#22c55e'],
+        });
+        stepsChart.render();
+        
+        // Calories Chart
+        const caloriesChart = new ApexCharts(document.querySelector("#calories-chart"), {
+            ...defaultAreaOptions,
+            series: [{ name: 'Calories', data: wearablesData.calories.data }],
+            colors: ['#f97316'],
+        });
+        caloriesChart.render();
+
+        // Heart Rate Chart
+        const hrChart = new ApexCharts(document.querySelector("#hr-chart"), {
+            ...defaultAreaOptions,
+            series: [{ name: 'RHR', data: wearablesData.heartRate.data }],
+            colors: ['#ef4444'],
+        });
+        hrChart.render();
+
+        // Sleep Chart
+        const sleepData = wearablesData.sleep.data;
+        const sleepChart = new ApexCharts(document.querySelector("#sleep-chart"), {
+            chart: { type: 'bar', height: '100%', stacked: true, toolbar: { show: false } },
+            plotOptions: { bar: { horizontal: false, columnWidth: '50%' } },
+            series: [
+                { name: 'Awake', data: sleepData.map(d => d.y[0]) },
+                { name: 'REM', data: sleepData.map(d => d.y[1]) },
+                { name: 'Light', data: sleepData.map(d => d.y[2]) },
+                { name: 'Deep', data: sleepData.map(d => d.y[3]) },
+            ],
+            xaxis: { categories: sleepData.map(d => d.x), labels: { style: { colors: '#9ca3af' } } },
+            yaxis: { labels: { style: { colors: '#9ca3af' }, formatter: (val) => `${Math.floor(val/60)}h ${val%60}m` } },
+            colors: ['#f87171', '#38bdf8', '#3b82f6', '#4f46e5'],
+            legend: { show: false },
+            grid: { borderColor: '#374151', strokeDashArray: 3 },
+            tooltip: { theme: 'dark', y: { formatter: (val) => `${val} min` } },
+            dataLabels: { enabled: false }
+        });
+        sleepChart.render();
+    };
+    
+    const renderTimelineCharts = () => {
+        const chartOptions = {
+            chart: {
+                type: 'area',
+                height: 150,
+                sparkline: { enabled: false },
+                toolbar: { show: false },
+                zoom: { enabled: false }
+            },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            fill: {
+                type: 'gradient',
+                gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1, stops: [0, 100] }
+            },
+            xaxis: {
+                categories: timelineDates,
+                labels: { style: { colors: '#9ca3af', fontSize: '10px' } },
+                axisBorder: { show: false },
+                axisTicks: { show: false }
+            },
+            yaxis: { show: false },
+            grid: { show: false },
+            tooltip: { theme: 'dark', x: { show: true } },
+            markers: { size: 4, strokeWidth: 2, strokeColor: '#1f2937', hover: { size: 6 } }
+        };
+
+        // Health Score Chart
+        const healthScoreChart = new ApexCharts(document.querySelector("#health-score-timeline-chart"), {
+            ...chartOptions,
+            series: [{ name: biomarkerHistory['Health Score'].name, data: biomarkerHistory['Health Score'].data }],
+            colors: ['#22c55e'],
+        });
+        healthScoreChart.render();
+
+        // hs-CRP Chart
+        const hsCrpChart = new ApexCharts(document.querySelector("#hscrp-timeline-chart"), {
+            ...chartOptions,
+            series: [{ name: biomarkerHistory['hs-CRP'].name, data: biomarkerHistory['hs-CRP'].data }],
+            colors: ['#ef4444'],
+            yaxis: { ...chartOptions.yaxis, reversed: true } // Lower is better
+        });
+        hsCrpChart.render();
+
+        // Vitamin D Chart
+        const vitDChart = new ApexCharts(document.querySelector("#vitd-timeline-chart"), {
+            ...chartOptions,
+            series: [{ name: biomarkerHistory['Vitamin D'].name, data: biomarkerHistory['Vitamin D'].data }],
+            colors: ['#f59e0b'],
+        });
+        vitDChart.render();
+        
+        // Testosterone Chart
+        const testosteroneChart = new ApexCharts(document.querySelector("#testosterone-timeline-chart"), {
+            ...chartOptions,
+            series: [{ name: biomarkerHistory['Testosterone'].name, data: biomarkerHistory['Testosterone'].data }],
+            colors: ['#3b82f6'],
+        });
+        testosteroneChart.render();
+    };
+
+    // --- Booking Modal Functions ---
+    const openBookingModal = () => {
+        document.getElementById('booking-modal').style.display = 'flex';
+        renderBookingCalendar();
+    }
+    const closeBookingModal = () => {
+        document.getElementById('booking-modal').style.display = 'none';
+        selectedBookingDate = null;
+        selectedBookingTime = null;
+        document.getElementById('time-slots-container').innerHTML = '<p class="text-sm text-gray-500 col-span-3">Please select a date to see available times.</p>';
+    }
+    
+    const renderBookingCalendar = () => {
+        const container = document.getElementById('booking-calendar-container');
+        const daysInMonth = new Date(bookingYear, bookingMonth + 1, 0).getDate();
+        const firstDayOfMonth = (new Date(bookingYear, bookingMonth, 1).getDay() + 6) % 7;
+        const monthName = new Date(bookingYear, bookingMonth).toLocaleString('default', { month: 'long' });
+        const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        let calendarHtml = `
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="changeBookingMonth(-1)" class="text-white hover:text-green-500 transition"><i class="fas fa-chevron-left"></i></button>
+                <h4 class="font-semibold text-white">${monthName} ${bookingYear}</h4>
+                <button onclick="changeBookingMonth(1)" class="text-white hover:text-green-500 transition"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-400 mb-2">
+                ${daysOfWeek.map(day => `<span>${day}</span>`).join('')}
+            </div>
+            <div class="grid grid-cols-7 gap-1">
+        `;
+
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            calendarHtml += `<div></div>`;
+        }
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const date = new Date(bookingYear, bookingMonth, i);
+            const isPast = date < today;
+            const isSelected = selectedBookingDate && date.toDateString() === selectedBookingDate.toDateString();
+            
+            let dayClasses = 'h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors ';
+            if (isPast) {
+                dayClasses += 'text-gray-600 cursor-not-allowed';
+            } else if (isSelected) {
+                dayClasses += 'bg-green-700 text-white font-bold';
+            } else {
+                dayClasses += 'text-gray-300 hover:bg-[#2a3b4d]';
+            }
+            
+            calendarHtml += `<div class="${dayClasses}" ${!isPast ? `onclick="handleBookingDateSelect('${date.toISOString()}')"` : ''}>${i}</div>`;
+        }
+        
+        calendarHtml += `</div>`;
+        container.innerHTML = calendarHtml;
+    }
+
+    window.changeBookingMonth = (delta) => {
+        bookingMonth += delta;
+        if (bookingMonth > 11) {
+            bookingMonth = 0;
+            bookingYear++;
+        } else if (bookingMonth < 0) {
+            bookingMonth = 11;
+            bookingYear--;
+        }
+        renderBookingCalendar();
+    }
+
+    window.handleBookingDateSelect = (dateString) => {
+        selectedBookingDate = new Date(dateString);
+        selectedBookingTime = null; // Reset time when date changes
+        renderBookingCalendar();
+        renderTimeSlots();
+    }
+
+    const renderTimeSlots = () => {
+        const container = document.getElementById('time-slots-container');
+        if (!selectedBookingDate) {
+            container.innerHTML = '<p class="text-sm text-gray-500 col-span-3">Please select a date to see available times.</p>';
+            return;
+        }
+        
+        // Mock time slots
+        const timeSlots = ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM'];
+        let slotsHtml = '';
+
+        timeSlots.forEach(time => {
+            const isSelected = selectedBookingTime === time;
+            const timeClasses = `p-2 rounded-lg text-sm text-center cursor-pointer transition-colors ${isSelected ? 'bg-green-700 text-white font-bold' : 'bg-[#2a3b4d] hover:bg-[#374151]'}`;
+            slotsHtml += `<button class="${timeClasses}" onclick="handleTimeSelect('${time}')">${time}</button>`;
+        });
+
+        container.innerHTML = slotsHtml;
+    }
+
+    window.handleTimeSelect = (time) => {
+        selectedBookingTime = time;
+        renderTimeSlots();
+    }
+
+    const confirmAppointment = () => {
+        if (selectedBookingDate && selectedBookingTime) {
+            const formattedDate = selectedBookingDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            showMessage(`Appointment confirmed for ${formattedDate} at ${selectedBookingTime}.`);
+            closeBookingModal();
+        } else {
+            showMessage('Please select a date and time for your appointment.', true);
+        }
+    }
+
+
+    // --- Main App Logic ---
+    const appContent = document.getElementById('app-content');
+    const renderApp = () => {
+      appContent.innerHTML = ''; // Clear previous content
+      if (activeTab === 'dashboard') {
+        appContent.innerHTML = renderDashboard();
+        renderCgmChart(); // Must be called after HTML is in the DOM
+      } else if (activeTab === 'meals') {
+        appContent.innerHTML = renderMeals();
+      } else if (activeTab === 'lifestyle') {
+        appContent.innerHTML = renderLifestyle();
+      } else if (activeTab === 'meal-log') {
+        appContent.innerHTML = renderMealLog();
+      } else if (activeTab === 'wearables') {
+        appContent.innerHTML = renderWearables();
+        renderAllWearableCharts();
+      } else if (activeTab === 'report') {
+        appContent.innerHTML = renderReportSummary();
+      } else if (activeTab === 'timeline') {
+        appContent.innerHTML = renderTimeline();
+        renderTimelineCharts();
+      } else if (activeTab === 'profile') {
+        appContent.innerHTML = renderProfile();
+        // Add event listeners for the new interactive elements
+        document.querySelectorAll('.profile-tag-label').forEach(label => {
+            label.addEventListener('click', () => {
+                const checkbox = label.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                label.classList.toggle('checked', checkbox.checked);
+            });
+        });
+      }
+    };
+
+    window.toggleAccordion = (id) => {
+        const content = document.getElementById(`accordion-content-${id}`);
+        const icon = document.getElementById(`accordion-icon-${id}`);
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            icon.classList.remove('rotate-180');
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+            icon.classList.add('rotate-180');
+        }
+    };
+    
+    // --- Event Handlers ---
+    window.selectMealPlanDate = (dateString) => {
+        selectedMealPlanDate = dateString;
+        renderApp();
+    };
+
+    window.handleMealSelect = (mealType, mealId) => {
+        const today = new Date('2025-08-22T12:00:00Z');
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(selectedMealPlanDate + 'T12:00:00Z');
+        selectedDate.setHours(0,0,0,0);
+        if (selectedDate <= today) return; // Don't allow changing past meals
+
+        if (!weeklyMealSelections[selectedMealPlanDate]) {
+            weeklyMealSelections[selectedMealPlanDate] = {};
+        }
+
+        const daySelections = weeklyMealSelections[selectedMealPlanDate];
+
+        if (daySelections[mealType] === mealId) {
+            delete daySelections[mealType]; // Deselect
+        } else {
+            daySelections[mealType] = mealId; // Select
+        }
+        
+        renderApp();
+    };
+
+    window.confirmFutureSelections = () => {
+        let selectionCount = 0;
+        for (const date in weeklyMealSelections) {
+            selectionCount += Object.keys(weeklyMealSelections[date]).length;
+        }
+
+        if (selectionCount > 0) {
+            showMessage(`Your plan for ${selectionCount} upcoming meals has been saved.`);
+        } else {
+            showMessage("No future meals were selected.", true);
+        }
+    };
+
+    window.logDeliveredDay = (dateStr) => {
+        const delivered = deliveredMeals[dateStr];
+        if (!delivered) {
+            showMessage("No delivered meals found for this day.", true);
+            return;
+        }
+
+        if (!mealLogDetailData[dateStr]) {
+            mealLogDetailData[dateStr] = [];
+        }
+
+        let newMealsLoggedCount = 0;
+        for (const mealType in delivered) {
+            const mealId = delivered[mealType];
+            const mealData = mealPlanData[mealType].find(m => m.id === mealId);
+
+            if (mealData && !mealLogDetailData[dateStr].some(m => m.name === mealData.name)) {
+                mealLogDetailData[dateStr].push({
+                    type: mealType,
+                    name: mealData.name,
+                    calories: mealData.calories
+                });
+                newMealsLoggedCount++;
+            }
+        }
+
+        if (newMealsLoggedCount > 0) {
+            showMessage(`Successfully logged ${newMealsLoggedCount} delivered meals for ${new Date(dateStr+'T12:00:00Z').toLocaleDateString()}.`);
+        } else {
+            showMessage("These meals have already been logged.", true);
+        }
+
+        renderApp();
+    };
+
+
+    window.logMealForToday = () => {
+      const todayDate = new Date();
+      const todayStr = todayDate.toISOString().split('T')[0];
+      const isAlreadyLogged = loggingScheduleData.some(d => d.date.toDateString() === todayDate.toDateString());
+      if (!isAlreadyLogged) {
+        // For demonstration, assume a full day of logging
+        loggingScheduleData.unshift({
+          date: todayDate,
+          logged: {
+            breakfast: true,
+            lunch: true,
+            dinner: true
+          }
+        });
+        mealLogDetailData[todayStr] = [{
+          type: 'breakfast',
+          name: 'Chocolate Avocado Smoothie',
+          calories: 450
+        }, {
+          type: 'lunch',
+          name: 'Chicken Salad with Mixed Greens',
+          calories: 450
+        }, {
+          type: 'dinner',
+          name: 'Chicken Skewers with Greek Salad',
+          calories: 550
+        }, ];
+        selectedDate = todayDate.toDateString();
+      }
+      renderApp();
+    };
+    window.handleDateSelect = (dateString) => {
+      selectedDate = new Date(dateString).toDateString();
+      renderApp();
+    };
+    window.changeMonth = (delta) => {
+      currentMonth += delta;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderApp();
+    };
+    
+    window.logPlannedMealsForSelectedDate = () => {
+        const dateStr = new Date(selectedDate).toISOString().split('T')[0];
+        const delivered = deliveredMeals[dateStr];
+
+        if (!delivered) {
+            showMessage("No delivered meal plan found for this day.", true);
+            return;
+        }
+
+        if (!mealLogDetailData[dateStr]) {
+            mealLogDetailData[dateStr] = [];
+        }
+
+        let newMealsLoggedCount = 0;
+        for (const mealType in delivered) {
+            const mealId = delivered[mealType];
+            const mealData = mealPlanData[mealType].find(m => m.id === mealId);
+
+            if (mealData && !mealLogDetailData[dateStr].some(m => m.name === mealData.name && m.type === mealType)) {
+                mealLogDetailData[dateStr].push({
+                    type: mealType,
+                    name: mealData.name,
+                    calories: mealData.calories
+                });
+                newMealsLoggedCount++;
+            }
+        }
+
+        if (newMealsLoggedCount > 0) {
+            const loggedEntry = loggingScheduleData.find(d => d.date.toDateString() === new Date(dateStr+'T12:00:00Z').toDateString());
+            if (!loggedEntry) {
+                loggingScheduleData.unshift({
+                    date: new Date(dateStr+'T12:00:00Z'),
+                    logged: { breakfast: true, lunch: true, dinner: true }
+                });
+            }
+            showMessage(`Successfully logged ${newMealsLoggedCount} meals for ${new Date(dateStr+'T12:00:00Z').toLocaleDateString()}.`);
+        } else {
+            showMessage("Meals for this day have already been logged.", true);
+        }
+        
+        renderApp();
+    };
+
+    document.getElementById('tab-container').addEventListener('click', (e) => {
+      const button = e.target.closest('.tab-button');
+      if (button) {
+        const tabId = button.dataset.tab;
+        if (tabId !== activeTab) {
+          activeTab = tabId;
+          document.getElementById('page-title').textContent = button.querySelector('span').textContent;
+          // Update button styles
+          document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('bg-green-800', 'text-white');
+            btn.classList.add('text-gray-400', 'hover:bg-[#2a3b4d]');
+          });
+          button.classList.add('bg-green-800', 'text-white');
+          button.classList.remove('text-gray-400', 'hover:bg-[#2a3b4d]');
+          renderApp();
+        }
+      }
+    });
+
+    // Booking Modal Event Listeners
+    document.getElementById('book-appointment-btn').addEventListener('click', openBookingModal);
+    document.getElementById('close-booking-modal').addEventListener('click', closeBookingModal);
+    document.getElementById('confirm-appointment-btn').addEventListener('click', confirmAppointment);
+
+    // Sidebar Toggle
+    document.getElementById('profile-toggle').addEventListener('click', () => {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content-wrapper');
+        const profileText = sidebar.querySelector('div.whitespace-nowrap');
+        const tabSpans = sidebar.querySelectorAll('.tab-button span');
+
+        if (sidebar.classList.contains('w-64')) {
+            sidebar.classList.remove('w-64');
+            sidebar.classList.add('w-20');
+            mainContent.classList.remove('ml-64');
+            mainContent.classList.add('ml-20');
+            profileText.classList.add('opacity-0');
+            tabSpans.forEach(span => span.classList.add('opacity-0'));
+        } else {
+            sidebar.classList.remove('w-20');
+            sidebar.classList.add('w-64');
+            mainContent.classList.remove('ml-20');
+            mainContent.classList.add('ml-64');
+            setTimeout(() => {
+                profileText.classList.remove('opacity-0');
+                tabSpans.forEach(span => span.classList.remove('opacity-0'));
+            }, 150);
+        }
+    });
+
+    // Initial Render
+    document.addEventListener('DOMContentLoaded', renderApp);
+  </script>
+</body>
+
+</html>

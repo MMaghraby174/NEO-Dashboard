@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neotrium Specialist Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #121212;
+      color: #e5e7eb;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #1f2937; }
+    ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+    /* Transitions */
+    #sidebar { transition: width 0.3s ease-in-out; }
+    #main-content-wrapper { transition: margin-left 0.3s ease-in-out; }
+    .tab-button span { transition: opacity 0.2s ease-in-out; }
+    .tab-button { transition: all 0.2s ease-in-out; }
+    
+    /* Animations & Accordion */
+    .content-fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+    }
+
+    /* AI Suggestion Styling */
+    .ai-suggestion {
+        border: 1px solid #3b82f6; /* Blue border */
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+    .ai-suggestion-header {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-bottom: 1px solid #3b82f6;
+    }
+
+    /* User Selected Context Styling */
+    body.user-selected #tab-container > .tab-button:not([data-tab="users"]) {
+        padding-left: 2.5rem; /* Indent the tab */
+        border-left: 4px solid #16a34a; /* Add green accent border */
+    }
+    body.user-selected #tab-container > .tab-button:not([data-tab="users"]):not(.bg-green-800) {
+        background-color: #2a3b4d;
+    }
+    body.user-selected #tab-container > .tab-button:not([data-tab="users"]):not(.bg-green-800):hover {
+        background-color: #374151;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-900">
+
+  <div id="sidebar" class="fixed top-0 left-0 h-screen bg-[#1f2937] z-30 w-64 overflow-hidden">
+      <div id="profile-toggle" class="flex items-center p-4 cursor-pointer border-b border-gray-700">
+          <div class="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center mr-4 shrink-0">
+              <i class="fas fa-user-shield text-xl text-white"></i>
+          </div>
+          <div class="whitespace-nowrap">
+            <h1 id="specialist-name" class="text-lg font-bold text-white">Specialist</h1>
+            <p class="text-sm text-gray-400">Specialist Dashboard</p>
+          </div>
+      </div>
+
+      <nav id="tab-container" class="mt-6 flex flex-col space-y-2">
+        <button data-tab="users" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors bg-green-800 text-white">
+            <i class="fas fa-users fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap">User Management</span>
+        </button>
+        <div id="selected-user-sidebar-display"></div>
+        <button data-tab="lifestyle-overview" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-chart-pie fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap">Lifestyle Overview</span>
+        </button>
+        <button data-tab="report" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-file-medical-alt fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap">Report Editor</span>
+        </button>
+        <button data-tab="meals" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-utensils fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap">Meal Planner</span>
+        </button>
+        <button data-tab="lifestyle" class="tab-button flex items-center py-3 px-6 text-sm font-semibold rounded-md transition-colors text-gray-400 hover:bg-[#2a3b4d]">
+            <i class="fas fa-person-running fa-fw text-lg w-8"></i><span class="ml-4 whitespace-nowrap">Lifestyle Protocols</span>
+        </button>
+      </nav>
+  </div>
+
+  <div id="main-content-wrapper" class="ml-64">
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
+                <h2 id="page-title" class="text-2xl font-bold text-white">User Management</h2>
+                <p id="page-subtitle" class="text-sm text-gray-400 mt-1">Select a user to view and edit their data.</p>
+            </div>
+            <div id="header-actions" class="flex items-center space-x-3 mt-4 md:mt-0">
+                </div>
+        </header>
+
+        <main id="app-content">
+          </main>
+    </div>
+  </div>
+  
+  <div id="message-box" class="fixed top-24 right-4 z-50 transition-transform transform translate-x-full">
+    <div id="message-box-content" class="text-white py-3 px-6 rounded-lg shadow-xl flex items-center">
+      <i id="message-box-icon" class="fas mr-3"></i>
+      <p id="message-text" class="font-semibold"></p>
+    </div>
+  </div>
+
+<script>
+// --- MOCK DATA, TEMPLATES & AI SIMULATION ---
+const currentSpecialist = "Dr. Milad Mansoori";
+const deepCopy = (obj) => JSON.parse(JSON.stringify(obj));
+
+const reportTemplate = {
+    biomarkers: [
+        { id: 'b_hscrp', name: 'hs-CRP', value: '', unit: 'mg/L', range: { min: 0, max: 1.0 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_wbc', name: 'White Blood Cells', value: '', unit: 'x10E9/L', range: { min: 4.0, max: 11.0 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_ferritin', name: 'Ferritin', value: '', unit: 'ng/mL', range: { min: 30, max: 300 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_glucose', name: 'Glucose', value: '', unit: 'mg/dL', range: { min: 70, max: 100 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_hba1c', name: 'HbA1c', value: '', unit: '%', range: { min: 4.0, max: 5.6 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_test', name: 'Testosterone', value: '', unit: 'ng/dL', range: { min: 300, max: 1000 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_dhea', name: 'DHEA-S', value: '', unit: 'ug/dL', range: { min: 140, max: 400 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_cortisol', name: 'Cortisol (AM)', value: '', unit: 'ug/dL', range: { min: 6, max: 18 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_vitd', name: 'Vitamin D', value: '', unit: 'ng/mL', range: { min: 50, max: 80 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_b12', name: 'Vitamin B12', value: '', unit: 'pg/mL', range: { min: 200, max: 900 }, status: 'Not Tested', isVerified: false },
+        { id: 'b_bifido', name: 'Bifidobacterium', value: '', unit: '%', range: { min: 3, max: 10 }, status: 'Not Tested', isVerified: false }
+    ],
+    geneticTraits: [
+        { id: 'g_painsens', title: 'Pain Sensitivity', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_novelty', title: 'Novelty Seeking', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_personality', title: 'Personality', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_fitnessadv', title: 'Fitness Advantage', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_recovery', title: 'Recovery Potential', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_peaktime', title: 'Peak Performance Time', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_injury', title: 'Injury Risk (Tendons)', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_aerobic', title: 'Aerobic Potential (VO2max)', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_fuelmix', title: 'Optimal Fuel Mix', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_lactose', title: 'Lactose Handling', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_gluten', title: 'Gluten Sensitivity Risk', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_shellfish', title: 'Shellfish Allergy', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_egg', title: 'Egg Allergy', gene: '', result: '', description: '', isVerified: false },
+        { id: 'g_fasting', title: 'Intermittent Fasting', gene: '', result: '', description: '', isVerified: false }
+    ],
+    summary: { content: "", isVerified: false }
+};
+
+const aiGeneratedData = {
+    biomarkers: [
+        { id: 'b_hscrp', value: 0.8, status: 'Optimal' },
+        { id: 'b_wbc', value: 6.2, status: 'Optimal' },
+        { id: 'b_ferritin', value: 150, status: 'Optimal' },
+        { id: 'b_glucose', value: 84, status: 'Optimal' },
+        { id: 'b_hba1c', value: 5.1, status: 'Optimal' },
+        { id: 'b_test', value: 640, status: 'Optimal' },
+        { id: 'b_dhea', value: 280, status: 'Optimal' },
+        { id: 'b_cortisol', value: 15, status: 'Optimal' },
+        { id: 'b_vitd', value: 45, status: 'Needs Improvement' },
+        { id: 'b_b12', value: 600, status: 'Optimal' },
+        { id: 'b_bifido', status: 'Not Tested' }
+    ],
+    geneticTraits: [
+        { id: 'g_painsens', gene: 'SCN9A', result: 'Higher Pain Threshold', description: 'You likely have a higher tolerance for pain.' },
+        { id: 'g_novelty', gene: 'DRD4-Ex3', result: 'Prefers Familiarity', description: 'Genetic makeup suggests a preference for familiar experiences.' },
+        { id: 'g_personality', gene: 'DRD4', result: 'Balanced Introvert/Extrovert', description: 'Adaptable in social situations.' },
+        { id: 'g_fitnessadv', gene: 'ACTN3', result: 'Power/Strength', description: 'The "sprint gene," giving an advantage in power-based activities.' },
+        { id: 'g_recovery', gene: 'IL-6', result: 'Standard Recovery', description: 'Typical inflammatory response to exercise.' },
+        { id: 'g_peaktime', gene: 'PER1', result: 'Morning Peak', description: 'Aligns with chronotype; body is primed for peak performance earlier in the day.' },
+        { id: 'g_injury', gene: 'COL1A1', result: 'Lower Risk', description: 'Genes suggest stronger collagen formation, indicating lower predisposition to tendon injuries.' },
+        { id: 'g_aerobic', gene: 'ACE', result: 'Enhanced Endurance', description: 'The "endurance allele" suggests a higher genetic potential for aerobic fitness.' },
+        { id: 'g_fuelmix', gene: 'FTO', result: 'Balanced Macronutrients', description: 'A balanced diet is likely most effective.' },
+        { id: 'g_lactose', gene: 'LCT', result: 'Lactose Tolerant', description: 'Likely to produce lactase and digest dairy well.' },
+        { id: 'g_gluten', gene: 'HLA-DQ', result: 'Lower Genetic Risk', description: 'You do not carry the primary gene variants associated with Celiac disease.' },
+        { id: 'g_shellfish', gene: 'CD207', result: 'Slightly Increased Tendency', description: 'Monitor for symptoms with shellfish.' },
+        { id: 'g_egg', gene: 'TET2', result: 'Typical Tendency', description: 'No increased predisposition to egg allergies.' },
+        { id: 'g_fasting', gene: 'CLOCK', result: 'Likely Effective', description: 'Circadian rhythm genes suggest intermittent fasting could be beneficial.' }
+    ],
+    summary: { content: "AI Analysis: User's tested biomarkers are optimal, except for Vitamin D. Genetic profile is strong for athletic performance and stress resilience. Primary focus should be on Vitamin D supplementation and leveraging natural morning-person tendencies." },
+    assignedMeals: ['b1', 'l1', 'd1'],
+    foodScoreboard: [
+        { id: 'f1', name: 'Avocado', improves: 'Cholesterol, Glucose', score: 9.5, isVerified: false },
+        { id: 'f2', name: 'Salmon', improves: 'Inflammation, Cognition', score: 9.2, isVerified: false },
+        { id: 'f3', name: 'Walnuts', improves: 'Omega-3, Brain Health', score: 8.9, isVerified: false }
+    ],
+    lifestyle: {
+        fitness: [
+            { day: 'Monday', activity: 'Strength Training (Full Body)', duration: '60 min', details: 'Compound movements like squats, deadlifts, and overhead press.', isVerified: false },
+            { day: 'Tuesday', activity: 'Zone 2 Cardio', duration: '45 min', details: 'Maintain a heart rate of 120-140 bpm.', isVerified: false }
+        ],
+        isVerified: false
+    }
+};
+
+// Function to merge AI data into a template
+const mergeAiData = (template, aiData) => {
+    const mergedReport = deepCopy(template);
+    mergedReport.biomarkers.forEach(biomarker => {
+        const aiMatch = aiData.biomarkers.find(b => b.id === biomarker.id);
+        if (aiMatch) {
+            biomarker.value = aiMatch.value;
+            biomarker.status = aiMatch.status;
+        }
+    });
+    mergedReport.geneticTraits.forEach(trait => {
+        const aiMatch = aiData.geneticTraits.find(t => t.id === trait.id);
+        if (aiMatch) {
+            trait.gene = aiMatch.gene;
+            trait.result = aiMatch.result;
+            trait.description = aiMatch.description;
+        }
+    });
+    mergedReport.summary.content = aiData.summary.content;
+    return mergedReport;
+};
+
+const usersData = {
+    'user-01': {
+        name: 'M. M.', email: 'mm@example.com', lastUpload: '2025-08-18', status: 'Review Needed',
+        profile: { chronologicalAge: 35, goals: 'Improve energy, optimize cognitive function, and build lean muscle.' },
+        report: mergeAiData(reportTemplate, aiGeneratedData),
+        assignedMeals: deepCopy(aiGeneratedData.assignedMeals),
+        assignedMealsVerified: false,
+        foodScoreboard: deepCopy(aiGeneratedData.foodScoreboard),
+        lifestyle: deepCopy(aiGeneratedData.lifestyle),
+        auditLog: [],
+        wearableData: {
+            steps: { average: 8904 }, calories: { average: 2201 }, sleep: { average: "7h 56m" }, hrv: { average: 78 },
+            loggedMeals: [
+                { date: '2025-08-20', type: 'Breakfast', name: 'Scrambled Eggs', calories: 350 },
+                { date: '2025-08-20', type: 'Lunch', name: 'Grilled Salmon Salad', calories: 550 },
+                { date: '2025-08-20', type: 'Dinner', name: 'Steak and Veggies', calories: 600 },
+            ]
+        }
+    },
+    'user-02': {
+        name: 'J. Doe', email: 'jane.doe@example.com', lastUpload: '2025-08-20', status: 'Report Published',
+        profile: { chronologicalAge: 42, goals: 'Weight management and stress reduction.' },
+        report: { 
+            biomarkers: [{ name: 'hs-CRP', value: 0.5, unit: 'mg/L', range: { min: 0, max: 1.0 }, status: 'Optimal', isVerified: true }], 
+            geneticTraits: [{ title: 'Stress Response', gene: 'COMT', result: 'Resilient', description: 'User has the warrior gene variant.', isVerified: true }], 
+            summary: { content: "User's inflammation is well-controlled. Continue current lifestyle.", isVerified: true } 
+        },
+        assignedMeals: ['b2', 'l2', 'd2'],
+        assignedMealsVerified: true,
+        foodScoreboard: [{ name: 'Blueberries', improves: 'Antioxidants', score: 9.8, isVerified: true }], 
+        lifestyle: { fitness: [{activity: 'Yoga', day: 'Wednesday', duration: '60 min', details: 'Focus on flexibility and breathing.'}], isVerified: true },
+        auditLog: [
+            { timestamp: '2025-08-20 11:34 AM', action: 'Report Published by Dr. Milad Mansoori.' },
+            { timestamp: '2025-08-21 09:15 AM', action: 'Edited Meal Plan: Swapped dinner to Lentil Soup. By Dr. Milad Mansoori.' }
+        ],
+        wearableData: {
+            steps: { average: 6500 }, calories: { average: 1950 }, sleep: { average: "7h 15m" }, hrv: { average: 65 },
+            loggedMeals: [
+                { date: '2025-08-20', type: 'Breakfast', name: 'Oatmeal', calories: 300 },
+                { date: '2025-08-20', type: 'Lunch', name: 'Lentil Soup', calories: 500 },
+            ]
+        }
+    },
+    'user-03': {
+        name: 'S. Smith', email: 'sam.smith@example.com', lastUpload: '2025-08-21', status: 'Pending AI Analysis',
+        profile: { chronologicalAge: 28, goals: 'Increase athletic performance.' },
+        report: deepCopy(reportTemplate),
+        assignedMeals: [],
+        assignedMealsVerified: false,
+        foodScoreboard: [], 
+        lifestyle: { fitness: [], isVerified: false },
+        auditLog: [],
+        wearableData: {
+            steps: { average: 12000 }, calories: { average: 2800 }, sleep: { average: "8h 10m" }, hrv: { average: 85 },
+            loggedMeals: []
+        }
+    },
+    'user-04': {
+        name: 'A. Williams', email: 'aw@example.com', lastUpload: '', status: 'Pending Upload',
+        profile: { chronologicalAge: 31, goals: 'Improve sleep quality and reduce stress.' },
+        report: deepCopy(reportTemplate),
+        assignedMeals: [],
+        assignedMealsVerified: false,
+        foodScoreboard: [],
+        lifestyle: { fitness: [], isVerified: false },
+        auditLog: [],
+        wearableData: { steps: { average: 0 }, calories: { average: 0 }, sleep: { average: "0h 0m" }, hrv: { average: 0 }, loggedMeals: [] }
+    },
+    'user-05': {
+        name: 'L. Chen', email: 'lchen@example.com', lastUpload: '', status: 'Pending Upload',
+        profile: { chronologicalAge: 45, goals: 'Longevity and healthspan extension.' },
+        report: deepCopy(reportTemplate),
+        assignedMeals: [],
+        assignedMealsVerified: false,
+        foodScoreboard: [],
+        lifestyle: { fitness: [], isVerified: false },
+        auditLog: [],
+        wearableData: { steps: { average: 0 }, calories: { average: 0 }, sleep: { average: "0h 0m" }, hrv: { average: 0 }, loggedMeals: [] }
+    },
+    'user-06': {
+        name: 'T. Jones', email: 'tjones@example.com', lastUpload: '', status: 'Pending Upload',
+        profile: { chronologicalAge: 38, goals: 'Optimize hormonal health.' },
+        report: deepCopy(reportTemplate),
+        assignedMeals: [],
+        assignedMealsVerified: false,
+        foodScoreboard: [],
+        lifestyle: { fitness: [], isVerified: false },
+        auditLog: [],
+        wearableData: { steps: { average: 0 }, calories: { average: 0 }, sleep: { average: "0h 0m" }, hrv: { average: 0 }, loggedMeals: [] }
+    }
+};
+
+const mealTags = {
+    'GF': 'Gluten-Free', 'DF': 'Dairy-Free', 'EF': 'Egg-Free', 'SF': 'Soy-Free', 'NF': 'Nut-Free', 'HP': 'High Protein',
+    'LC': 'Low Carb', 'VG': 'Vegan', 'AI': 'Anti-Inflammatory', 'GH': 'Gut-Healing', 'LF': 'Low FODMAP',
+    'LH': 'Low Histamine', 'LO': 'Low Oxalate', 'LP': 'Low Purine'
+};
+
+const mealLibraryData = [
+    { id: 'b1', type: 'breakfast', name: 'Scrambled Eggs with Spinach & Avocado', calories: 350, protein: 25, carbs: 10, fats: 25, tags: ['GF', 'LC', 'HP', 'NF', 'SF', 'AI'] },
+    { id: 'b2', type: 'breakfast', name: 'Greek Yogurt with Berries & Nuts', calories: 400, protein: 30, carbs: 35, fats: 15, tags: ['GF', 'HP', 'SF', 'AI', 'LC'] },
+    { id: 'b3', type: 'breakfast', name: 'Tofu Scramble', calories: 380, protein: 30, carbs: 15, fats: 22, tags: ['GF', 'DF', 'EF', 'NF', 'HP', 'VG'] },
+    { id: 'b4', type: 'breakfast', name: 'Chia Seed Pudding', calories: 320, protein: 10, carbs: 30, fats: 18, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'VG', 'AI', 'GH'] },
+    { id: 'l1', type: 'lunch', name: 'Grilled Salmon with Quinoa & Asparagus', calories: 550, protein: 40, carbs: 40, fats: 25, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'HP', 'AI'] },
+    { id: 'l2', type: 'lunch', name: 'Chicken Salad with Mixed Greens', calories: 450, protein: 35, carbs: 15, fats: 30, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'HP', 'LC'] },
+    { id: 'l3', type: 'lunch', name: 'Chickpea & Spinach Curry', calories: 500, protein: 20, carbs: 65, fats: 18, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'VG', 'GH', 'AI'] },
+    { id: 'd1', type: 'dinner', name: 'Lean Steak with Sweet Potato & Broccoli', calories: 600, protein: 50, carbs: 45, fats: 25, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'HP'] },
+    { id: 'd2', type: 'dinner', name: 'Lentil Soup', calories: 500, protein: 25, carbs: 70, fats: 10, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'VG', 'GH'] },
+    { id: 'd3', type: 'dinner', name: 'Cod with Roasted Veggies', calories: 480, protein: 45, carbs: 20, fats: 25, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'HP', 'LC', 'LF', 'AI'] },
+    { id: 's1', type: 'snack', name: 'Chicken Bone Broth', calories: 80, protein: 15, carbs: 2, fats: 1, tags: ['GF', 'DF', 'EF', 'SF', 'NF', 'HP', 'LC', 'GH', 'LF', 'AI'] }
+];
+
+// --- STATE MANAGEMENT ---
+let state = { activeTab: 'users', selectedUserId: null, activeMealTags: [], selectedMealIds: [] };
+
+// --- HELPER FUNCTIONS ---
+const showMessage = (message, type = 'success') => {
+  const box = document.getElementById('message-box');
+  const content = document.getElementById('message-box-content');
+  const icon = document.getElementById('message-box-icon');
+  const text = document.getElementById('message-text');
+  
+  content.classList.remove('bg-green-600', 'bg-blue-600', 'bg-yellow-500');
+  icon.classList.remove('fa-check-circle', 'fa-info-circle', 'fa-spinner', 'fa-spin');
+
+  switch (type) {
+    case 'info': content.classList.add('bg-blue-600'); icon.classList.add('fa-info-circle'); break;
+    case 'loading': content.classList.add('bg-yellow-500'); icon.classList.add('fa-spinner', 'fa-spin'); break;
+    default: content.classList.add('bg-green-600'); icon.classList.add('fa-check-circle');
+  }
+  
+  text.textContent = message;
+  box.classList.remove('translate-x-full');
+  
+  if (type !== 'loading') {
+    setTimeout(() => box.classList.add('translate-x-full'), 3000);
+  }
+};
+
+const hideMessage = () => document.getElementById('message-box').classList.add('translate-x-full');
+
+const checkAllVerified = (userId) => {
+    if (!userId) return false;
+    const user = usersData[userId];
+    if (user.status !== 'Review Needed') return false;
+
+    const reportVerified = user.report.biomarkers.every(b => b.isVerified) &&
+                           user.report.geneticTraits.every(g => g.isVerified) &&
+                           user.report.summary.isVerified;
+    
+    const mealsVerified = user.assignedMealsVerified && user.foodScoreboard.every(f => f.isVerified);
+    const lifestyleVerified = user.lifestyle.isVerified;
+
+    return reportVerified && mealsVerified && lifestyleVerified;
+};
+
+function updateSidebar() {
+    const userDisplayContainer = document.getElementById('selected-user-sidebar-display');
+    if (state.selectedUserId) {
+        const user = usersData[state.selectedUserId];
+        userDisplayContainer.innerHTML = `
+            <div class="py-2 pl-12 pr-6 text-sm text-white flex items-center bg-gray-700/50 my-2">
+                <i class="fas fa-user-check fa-fw text-lg w-8 -ml-6 mr-2 text-green-400"></i>
+                <span class="whitespace-nowrap font-semibold">${user.name}</span>
+            </div>
+        `;
+    } else {
+        userDisplayContainer.innerHTML = '';
+    }
+}
+
+function updateSidebarActiveState() {
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        const isCurrentTab = btn.dataset.tab === state.activeTab;
+        btn.classList.toggle('bg-green-800', isCurrentTab);
+        btn.classList.toggle('text-white', isCurrentTab);
+        btn.classList.toggle('text-gray-400', !isCurrentTab);
+        btn.classList.toggle('hover:bg-[#2a3b4d]', !isCurrentTab);
+    });
+}
+
+// --- RENDER FUNCTIONS ---
+function renderApp() {
+    const appContent = document.getElementById('app-content');
+    const body = document.body;
+
+    if (state.selectedUserId) {
+        body.classList.add('user-selected');
+    } else {
+        body.classList.remove('user-selected');
+    }
+
+    appContent.innerHTML = '';
+    appContent.classList.add('content-fade-in');
+    setTimeout(() => appContent.classList.remove('content-fade-in'), 500);
+
+    updateSidebar();
+    updateHeader();
+
+    if (state.selectedUserId) {
+        switch (state.activeTab) {
+            case 'report': appContent.innerHTML = renderReportEditor(); break;
+            case 'meals': appContent.innerHTML = renderMealPlanner(); break;
+            case 'lifestyle': appContent.innerHTML = renderLifestyleEditor(); break;
+            case 'lifestyle-overview': appContent.innerHTML = renderLifestyleOverview(); break;
+            default: appContent.innerHTML = renderLifestyleOverview(); break;
+        }
+    } else {
+        state.activeTab = 'users';
+        updateSidebarActiveState();
+        appContent.innerHTML = renderUserSelection();
+    }
+}
+
+
+function updateHeader() {
+    const pageTitle = document.getElementById('page-title');
+    const pageSubtitle = document.getElementById('page-subtitle');
+    const headerActions = document.getElementById('header-actions');
+    headerActions.innerHTML = '';
+
+    const tabName = document.querySelector(`.tab-button[data-tab="${state.activeTab}"]`)?.querySelector('span').textContent || 'User Management';
+
+    if (state.selectedUserId) {
+        const user = usersData[state.selectedUserId];
+        pageTitle.textContent = tabName;
+        pageSubtitle.textContent = `Editing data for ${user.name}`;
+        
+        const backButton = document.createElement('button');
+        backButton.className = "bg-[#2a3b4d] border border-[#374151] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#374151] transition flex items-center text-sm";
+        backButton.innerHTML = `<i class="fas fa-arrow-left mr-2"></i> User List`;
+        backButton.onclick = () => { handleTabClick('users'); };
+        headerActions.appendChild(backButton);
+
+        if (user.status === 'Pending AI Analysis') {
+            const aiButton = document.createElement('button');
+            aiButton.className = "bg-blue-700 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition flex items-center text-sm";
+            aiButton.innerHTML = `<i class="fas fa-robot mr-2"></i> Generate AI Recommendations`;
+            aiButton.onclick = () => handleAIGeneration(state.selectedUserId);
+            headerActions.appendChild(aiButton);
+        }
+    } else {
+        pageTitle.textContent = 'User Management';
+        pageSubtitle.textContent = 'Select a user to view and edit their data.';
+    }
+}
+
+function renderUserSelection() {
+    const userRows = Object.entries(usersData).map(([id, user]) => {
+        const statusStyles = {
+            'Pending Upload': 'bg-gray-700 text-gray-300',
+            'Pending AI Analysis': 'bg-blue-800 text-blue-300',
+            'Review Needed': 'bg-yellow-800 text-yellow-300',
+            'Report Published': 'bg-green-800 text-green-300'
+        };
+        const uploadButton = user.status === 'Pending Upload' 
+            ? `<button onclick="event.stopPropagation(); handleUpload('${id}')" class="bg-green-700 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg text-xs">Upload Results</button>`
+            : `<span class="text-xs text-gray-500">Uploaded</span>`;
+        
+        return `
+            <tr class="border-b border-gray-700 hover:bg-[#2a3b4d] cursor-pointer transition-colors" onclick="handleUserSelect('${id}')">
+                <td class="p-4 font-bold text-white">${user.name}</td>
+                <td class="p-4 text-gray-300">${user.email}</td>
+                <td class="p-4 text-center">${uploadButton}</td>
+                <td class="p-4 text-right">
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full ${statusStyles[user.status]}">${user.status}</span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="bg-[#1f2937] border border-[#374151] rounded-xl shadow-lg overflow-hidden">
+            <table class="w-full text-left"><thead class="bg-[#2a3b4d]"><tr>
+                <th class="p-4 font-semibold text-white">Name</th>
+                <th class="p-4 font-semibold text-white">Email</th>
+                <th class="p-4 font-semibold text-white text-center">Lab Results</th>
+                <th class="p-4 font-semibold text-white text-right">Status</th>
+            </tr></thead><tbody>${userRows}</tbody></table>
+        </div>
+    `;
+}
+
+function createSuggestionCard(title, content, verificationKey) {
+    const user = usersData[state.selectedUserId];
+    const keys = verificationKey.split('.');
+    let current = user;
+    for (let i = 0; i < keys.length; i++) {
+        if (current === undefined) break;
+        current = current[keys[i]];
+    }
+    const isVerified = current === true;
+
+    const cardClass = isVerified ? 'border-green-600' : 'ai-suggestion';
+    const headerClass = isVerified ? 'bg-green-900/50 border-green-600' : 'ai-suggestion-header';
+    const icon = isVerified ? '<i class="fas fa-check-circle text-green-400"></i>' : '<i class="fas fa-lightbulb text-blue-400"></i>';
+    const statusText = isVerified ? '<span class="text-green-400 font-semibold">Approved</span>' : '<span class="text-blue-400 font-semibold">Pending Approval</span>';
+    
+    let actionButton = '';
+    if (!isVerified && user.status !== 'Report Published') {
+        actionButton = `<button onclick="handleApprove('${verificationKey}')" class="bg-green-700 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-lg text-xs">Approve</button>`;
+    }
+
+    if (user.status === 'Pending AI Analysis' && verificationKey !== 'assignedMealsVerified') {
+        actionButton = `<button onclick="handleAIGeneration('${state.selectedUserId}')" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-lg text-xs"><i class="fas fa-robot mr-2"></i>Generate with AI</button>`;
+    }
+
+    return `<div class="bg-[#1f2937] border rounded-xl overflow-hidden ${cardClass}"><div class="flex justify-between items-center p-3 ${headerClass}"><div class="flex items-center gap-3">${icon}<h3 class="text-lg font-bold text-white">${title}</h3>${statusText}</div>${actionButton}</div><div class="p-6">${content}</div></div>`;
+}
+
+function renderFooterActions() {
+    const user = usersData[state.selectedUserId];
+    if (user.status === 'Review Needed') {
+        const isReady = checkAllVerified(state.selectedUserId);
+        const buttonClass = isReady ? 'bg-green-700 hover:bg-green-600 cursor-pointer' : 'bg-gray-600 cursor-not-allowed';
+        const buttonAction = isReady ? `onclick="handlePublishAll('${state.selectedUserId}')"` : '';
+        const buttonTitle = isReady ? 'Publish all verified information to the user' : 'All sections must be approved before publishing';
+        return `<div class="mt-8 border-t border-gray-700 pt-6 flex justify-end"><div title="${buttonTitle}"><button ${buttonAction} class="text-white font-bold py-3 px-8 rounded-lg transition-colors text-lg flex items-center ${buttonClass}"><i class="fas fa-paper-plane mr-3"></i>Publish All to User</button></div></div>`;
+    }
+    if (user.status === 'Report Published') {
+        const logEntries = user.auditLog.map(log => `<div class="flex items-start gap-3 py-2 border-b border-gray-700 last:border-b-0 text-sm"><i class="fas fa-history text-gray-500 mt-1"></i><div><p class="text-gray-300">${log.action}</p><p class="text-xs text-gray-500">${log.timestamp}</p></div></div>`).join('');
+        return `
+            <div class="mt-8 border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="w-full">
+                    <button onclick="toggleAccordion('audit-log')" class="w-full flex justify-between items-center p-3 bg-[#2a3b4d] rounded-lg">
+                        <span class="font-semibold text-white flex items-center"><i class="fas fa-history mr-2"></i>Audit Log</span>
+                        <i id="accordion-icon-audit-log" class="fas fa-chevron-down text-gray-400 transition-transform"></i>
+                    </button>
+                    <div id="accordion-content-audit-log" class="accordion-content p-4 bg-[#1f2937] rounded-b-lg">${logEntries}</div>
+                </div>
+                <button onclick="handleSaveChanges('${state.selectedUserId}')" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg transition-colors text-lg flex items-center shrink-0"><i class="fas fa-save mr-3"></i>Save & Log Changes</button>
+            </div>
+        `;
+    }
+    return '';
+}
+
+function renderReportEditor() {
+    const user = usersData[state.selectedUserId];
+     if (user.status === 'Pending AI Analysis' && !user.report.biomarkers.some(b => b.value)) {
+        user.report = deepCopy(reportTemplate); 
+    }
+    
+    const biomarkerRows = user.report.biomarkers.map(b => `
+        <div class="grid grid-cols-12 gap-4 items-center py-2 border-b border-gray-700 last:border-b-0">
+            <input class="col-span-3 bg-[#2a3b4d] rounded p-2 text-sm" value="${b.name}">
+            <input type="number" class="col-span-1 bg-[#2a3b4d] rounded p-2 text-sm" value="${b.value}">
+            <input class="col-span-1 bg-[#2a3b4d] rounded p-2 text-sm" value="${b.unit}">
+            <input type="number" class="col-span-1 bg-[#2a3b4d] rounded p-2 text-sm" value="${b.range?.min || ''}">
+            <input type="number" class="col-span-1 bg-[#2a3b4d] rounded p-2 text-sm" value="${b.range?.max || ''}">
+            <select class="col-span-3 bg-[#2a3b4d] rounded p-2 text-sm">
+                <option ${b.status === 'Optimal' ? 'selected' : ''}>Optimal</option>
+                <option ${b.status === 'Needs Improvement' ? 'selected' : ''}>Needs Improvement</option>
+                <option ${b.status === 'Not Tested' ? 'selected' : ''}>Not Tested</option>
+            </select>
+            <button class="col-span-2 text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    `).join('');
+    const biomarkersContent = `<div class="space-y-2">${biomarkerRows}</div> <button onclick="handleAddBiomarker()" class="mt-4 bg-green-700/50 hover:bg-green-600/50 text-white font-semibold py-2 px-4 rounded-lg text-sm"><i class="fas fa-plus mr-2"></i>Add Biomarker</button>`;
+
+    const geneticTraitCards = user.report.geneticTraits.map(g => `
+        <div class="bg-[#2a3b4d] p-4 rounded-lg space-y-2">
+            <input class="w-full bg-[#1f2937] rounded p-2 font-semibold" value="${g.title}">
+            <div class="flex gap-2"><input class="w-1/2 bg-[#1f2937] rounded p-2 text-sm" placeholder="Gene (e.g., COMT)" value="${g.gene || ''}"><input class="w-1/2 bg-[#1f2937] rounded p-2 text-sm" placeholder="Result" value="${g.result || ''}"></div>
+            <textarea class="w-full bg-[#1f2937] rounded p-2 text-sm h-24" placeholder="Description...">${g.description || ''}</textarea>
+        </div>
+    `).join('');
+    const traitsContent = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${geneticTraitCards}</div> <button onclick="handleAddGeneticTrait()" class="mt-4 bg-green-700/50 hover:bg-green-600/50 text-white font-semibold py-2 px-4 rounded-lg text-sm"><i class="fas fa-plus mr-2"></i>Add Genetic Trait</button>`;
+    
+    const summaryContent = `<textarea class="w-full bg-[#2a3b4d] rounded p-4 text-sm h-48">${user.report.summary.content}</textarea>`;
+
+    return `
+        <div class="space-y-6">
+            ${createSuggestionCard('Biomarker Analysis', biomarkersContent, 'report.biomarkers.isVerified')}
+            ${createSuggestionCard('Genetic Traits', traitsContent, 'report.geneticTraits.isVerified')}
+            ${createSuggestionCard("Doctor's Summary", summaryContent, 'report.summary.isVerified')}
+            ${renderFooterActions()}
+        </div>
+    `;
+}
+
+function renderMealPlanner() {
+    const user = usersData[state.selectedUserId];
+    if (user.status === 'Pending AI Analysis') return `<div class="text-center text-gray-400 p-8">Press "Generate AI Recommendations" to populate this section.</div>`;
+    
+    const tagButtons = Object.entries(mealTags).map(([tag, name]) => {
+        const isActive = state.activeMealTags.includes(tag);
+        const buttonClass = isActive ? 'bg-blue-600 text-white' : 'bg-[#2a3b4d] text-gray-300 hover:bg-[#374151]';
+        return `<button onclick="handleTagFilterClick('${tag}')" class="${buttonClass} font-semibold py-1.5 px-3 rounded-lg text-xs transition-colors">${name}</button>`;
+    }).join('');
+
+    const filteredMeals = mealLibraryData.filter(meal => 
+        state.activeMealTags.every(tag => meal.tags.includes(tag))
+    );
+
+    const mealLibraryItems = filteredMeals.map(meal => {
+        const isSelected = state.selectedMealIds.includes(meal.id);
+        const itemClass = isSelected ? 'border-blue-500 bg-blue-900/40' : 'border-transparent';
+        return `
+            <div onclick="handleMealSelect('${meal.id}')" class="bg-[#2a3b4d] p-3 rounded-lg border-2 ${itemClass} cursor-pointer transition-all">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold text-white capitalize">${meal.name} <span class="text-xs text-gray-400">(${meal.type})</span></p>
+                        <p class="text-xs text-gray-400">${meal.calories} kcal | P:${meal.protein}g C:${meal.carbs}g F:${meal.fats}g</p>
+                    </div>
+                    <button onclick="event.stopPropagation(); showMessage('Editing meal...','info')" class="text-blue-400 hover:text-blue-300 text-sm font-semibold">Edit</button>
+                </div>
+                <div class="mt-2 flex flex-wrap gap-1">
+                    ${meal.tags.map(tag => `<span title="${mealTags[tag]}" class="bg-gray-600 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full cursor-default">${tag}</span>`).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    const visibleMealIds = filteredMeals.map(m => m.id);
+    const allVisibleSelected = visibleMealIds.length > 0 && visibleMealIds.every(id => state.selectedMealIds.includes(id));
+    const selectAllButtonText = allVisibleSelected ? 'Deselect All' : 'Select All';
+    
+    // --- User Meal Plan Content ---
+    const assignedMealIds = user.assignedMeals || [];
+    let assignedMealsContent;
+    if (assignedMealIds.length > 0) {
+        assignedMealsContent = assignedMealIds.map(mealId => {
+            const meal = mealLibraryData.find(m => m.id === mealId);
+            if (!meal) return '';
+            return `
+                <div class="bg-[#2a3b4d] p-3 rounded-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-semibold text-white capitalize">${meal.name} <span class="text-xs text-gray-400">(${meal.type})</span></p>
+                             <div class="mt-2 flex flex-wrap gap-1">
+                                ${meal.tags.map(tag => `<span title="${mealTags[tag]}" class="bg-gray-600 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full cursor-default">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                        <button onclick="handleRemoveAssignedMeal('${meal.id}')" class="text-red-500 hover:text-red-400 text-sm font-semibold ml-2"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        assignedMealsContent = `<div class="text-center text-gray-500 py-8">No meals assigned. <br>Select from the library and click "Assign".</div>`;
+    }
+
+    const foodScoreboardItems = user.foodScoreboard.map(food => `
+        <div class="grid grid-cols-12 gap-2 items-center">
+            <input class="col-span-4 bg-[#1f2937] rounded p-2 text-sm" value="${food.name}">
+            <input class="col-span-5 bg-[#1f2937] rounded p-2 text-sm" value="${food.improves}">
+            <input type="number" step="0.1" class="col-span-2 bg-[#1f2937] rounded p-2 text-sm" value="${food.score}">
+            <button class="col-span-1 text-red-500 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+        </div>
+    `).join('');
+    const foodScoreboardContent = `<div class="space-y-2">${foodScoreboardItems}</div> <button onclick="handleAddFoodScore()" class="mt-4 bg-green-700/50 hover:bg-green-600/50 text-white font-semibold py-2 px-4 rounded-lg text-sm"><i class="fas fa-plus mr-2"></i>Add Food</button>`;
+
+    return `
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6 flex flex-col">
+                <div class="flex justify-between items-center pb-2">
+                    <h3 class="text-xl font-bold text-white">Master Meal Library</h3>
+                    <button onclick="handleImportClick()" class="bg-blue-700 hover:bg-blue-600 text-white font-semibold py-1.5 px-4 rounded-lg text-xs flex items-center transition-colors">
+                        <i class="fas fa-upload mr-2"></i> Import Meals
+                    </button>
+                </div>
+                <div class="my-4 space-y-3">
+                    <p class="text-sm font-semibold text-gray-300">Filter by Tag:</p>
+                    <div class="flex flex-wrap gap-2">${tagButtons}</div>
+                </div>
+                <div class="flex-grow min-h-0 overflow-y-auto pr-2 space-y-3">${mealLibraryItems}</div>
+                <div class="mt-4 pt-4 border-t border-gray-600 flex justify-between items-center">
+                     <button onclick="handleSelectAllVisibleMeals()" class="text-blue-400 hover:text-blue-300 font-semibold text-sm">${selectAllButtonText}</button>
+                    <div class="flex gap-3">
+                        <button onclick="handleAddMealManuallyClick()" class="bg-[#2a3b4d] hover:bg-[#374151] text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors">
+                            <i class="fas fa-plus mr-2"></i> Add Meal Manually
+                        </button>
+                        <button onclick="handleAssignMealsClick()" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-5 rounded-lg text-sm transition-colors">
+                            Assign Selected Meals
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-6">
+                 ${createSuggestionCard('User Meal Plan', `<div class="space-y-3">${assignedMealsContent}</div>`, 'assignedMealsVerified')}
+                ${createSuggestionCard('Food Scoreboard', foodScoreboardContent, 'foodScoreboard.isVerified')}
+            </div>
+        </div>
+        ${renderFooterActions()}
+    `;
+}
+
+
+function renderLifestyleEditor() {
+    const user = usersData[state.selectedUserId];
+    if (user.status === 'Pending AI Analysis') return `<div class="text-center text-gray-400 p-8">Press "Generate AI Recommendations" to populate this section.</div>`;
+    
+    const fitnessRows = user.lifestyle.fitness.map(f => `
+        <div class="grid grid-cols-12 gap-2 items-center">
+            <input class="col-span-2 bg-[#2a3b4d] rounded p-2 text-sm" value="${f.day || ''}">
+            <input class="col-span-4 bg-[#2a3b4d] rounded p-2 text-sm" value="${f.activity || ''}">
+            <input class="col-span-2 bg-[#2a3b4d] rounded p-2 text-sm" value="${f.duration || ''}">
+            <input class="col-span-4 bg-[#2a3b4d] rounded p-2 text-sm" value="${f.details || ''}">
+        </div>
+    `).join('');
+    const fitnessContent = `<div class="space-y-2">${fitnessRows}</div> <button onclick="handleAddFitness()" class="mt-4 bg-green-700/50 hover:bg-green-600/50 text-white font-semibold py-2 px-4 rounded-lg text-sm"><i class="fas fa-plus mr-2"></i>Add Fitness Activity</button>`;
+
+    return `
+        <div class="space-y-6">
+            ${createSuggestionCard('Weekly Fitness Protocol', fitnessContent, 'lifestyle.isVerified')}
+            ${renderFooterActions()}
+        </div>
+    `;
+}
+function renderLifestyleOverview() {
+    const user = usersData[state.selectedUserId];
+    if (!user.wearableData) return `<div class="text-center text-gray-400 p-8">No wearable data for this user.</div>`;
+
+    const createMetricCard = (title, icon, value, unit, trend) => {
+        const trendIcon = trend === 'up' ? 'fa-arrow-trend-up text-green-500' : 'fa-arrow-trend-down text-red-500';
+        const trendText = trend === 'up' ? 'Trending Up' : 'Trending Down';
+        return `
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6">
+                <div class="flex items-center text-gray-400 mb-2">
+                    <i class="fas ${icon} mr-2"></i>
+                    <span class="text-sm font-medium">${title}</span>
+                </div>
+                <p class="text-4xl font-bold text-white">${value} <span class="text-lg font-normal text-gray-400">${unit}</span></p>
+                <div class="flex items-center text-xs text-gray-500 mt-2">
+                    <i class="fas ${trendIcon} mr-1"></i>
+                    <span>${trendText} (last 7 days)</span>
+                </div>
+            </div>
+        `;
+    };
+
+    const mealLogRows = user.wearableData.loggedMeals.slice(0, 5).map(meal => `
+        <tr class="border-b border-gray-700 last:border-b-0">
+            <td class="p-3 text-sm text-gray-300">${meal.date}</td>
+            <td class="p-3 text-sm text-white font-semibold">${meal.type}</td>
+            <td class="p-3 text-sm text-gray-300">${meal.name}</td>
+            <td class="p-3 text-sm text-white text-right">${meal.calories} kcal</td>
+        </tr>
+    `).join('');
+
+    const mealLogTable = user.wearableData.loggedMeals.length > 0 ? mealLogRows : `<tr><td colspan="4" class="p-4 text-center text-gray-500">No meals logged.</td></tr>`;
+
+    return `
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                ${createMetricCard('Avg Steps', 'fa-shoe-prints', user.wearableData.steps.average.toLocaleString(), 'daily', 'up')}
+                ${createMetricCard('Avg Calories', 'fa-fire', user.wearableData.calories.average.toLocaleString(), 'burned daily', 'down')}
+                ${createMetricCard('Avg Sleep', 'fa-bed', user.wearableData.sleep.average, '', 'up')}
+                ${createMetricCard('Avg HRV', 'fa-heart-pulse', user.wearableData.hrv.average, 'ms', 'up')}
+            </div>
+            
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">Recent Meal Log</h3>
+                <table class="w-full">
+                    <thead class="border-b border-gray-600">
+                        <tr>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-400">Date</th>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-400">Type</th>
+                            <th class="p-3 text-left text-xs font-semibold text-gray-400">Meal</th>
+                            <th class="p-3 text-right text-xs font-semibold text-gray-400">Calories</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${mealLogTable}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-[#1f2937] border border-[#374151] rounded-xl p-6">
+                <h3 class="text-xl font-bold text-white mb-4">Specialist Notes & Advice</h3>
+                <textarea class="w-full bg-[#2a3b4d] rounded p-4 text-sm h-48" placeholder="Enter advice for the user based on their lifestyle data... e.g., 'Noticed a dip in sleep on Tuesday. Great job hitting your step goal on Friday!'"></textarea>
+                <div class="text-right mt-4">
+                     <button onclick="showMessage('Advice saved!')" class="bg-blue-700 hover:bg-blue-600 text-white font-bold py-2 px-5 rounded-lg transition-colors text-sm"><i class="fas fa-save mr-2"></i>Save Advice</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// --- EVENT HANDLERS ---
+function handleUpload(userId) {
+    usersData[userId].status = 'Pending AI Analysis';
+    showMessage(`Lab results for ${usersData[userId].name} uploaded.`, 'info');
+    renderApp();
+}
+
+function handleAIGeneration(userId) {
+    showMessage('AI is analyzing results and generating a report...', 'loading');
+    setTimeout(() => {
+        const user = usersData[userId];
+        user.report = mergeAiData(user.report, aiGeneratedData);
+        
+        user.assignedMeals = deepCopy(aiGeneratedData.assignedMeals);
+        user.foodScoreboard = deepCopy(aiGeneratedData.foodScoreboard);
+        user.lifestyle = deepCopy(aiGeneratedData.lifestyle);
+        user.status = 'Review Needed';
+        hideMessage();
+        showMessage('AI Report generated and is ready for review.');
+        handleUserSelect(userId);
+    }, 2500);
+}
+
+function handleApprove(key) {
+    const user = usersData[state.selectedUserId];
+    
+    const keys = key.split('.');
+    let current = user;
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) current[keys[i]] = {};
+        current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = true;
+
+    showMessage('Section approved!', 'success');
+    renderApp();
+}
+
+
+function handlePublishAll(userId) {
+    if (!checkAllVerified(userId)) {
+        showMessage('Error: Not all sections are approved.', 'info');
+        return;
+    }
+    const user = usersData[userId];
+    user.status = 'Report Published';
+    const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    user.auditLog.push({ timestamp, action: `Report Published by ${currentSpecialist}.` });
+    showMessage(`Report for ${user.name} has been published!`);
+    state.selectedUserId = null;
+    renderApp();
+}
+
+function handleSaveChanges(userId) {
+    const user = usersData[userId];
+    const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    user.auditLog.push({ timestamp, action: `Edits saved in the ${state.activeTab} tab by ${currentSpecialist}.` });
+    showMessage('Changes saved and logged.');
+    renderApp();
+}
+
+function handleTagFilterClick(tag) {
+    const tagIndex = state.activeMealTags.indexOf(tag);
+    if (tagIndex > -1) {
+        state.activeMealTags.splice(tagIndex, 1); // Remove tag
+    } else {
+        state.activeMealTags.push(tag); // Add tag
+    }
+    renderApp();
+}
+
+function handleImportClick() {
+    showMessage('This would open a modal to import meals.', 'info');
+}
+
+function handleAddMealManuallyClick() {
+     showMessage('This would open a form to add a new meal.', 'info');
+}
+
+function handleMealSelect(mealId) {
+    const mealIndex = state.selectedMealIds.indexOf(mealId);
+    if (mealIndex > -1) {
+        state.selectedMealIds.splice(mealIndex, 1);
+    } else {
+        state.selectedMealIds.push(mealId);
+    }
+    renderApp();
+}
+
+function handleSelectAllVisibleMeals() {
+    const filteredMeals = mealLibraryData.filter(meal => state.activeMealTags.every(tag => meal.tags.includes(tag)));
+    const visibleMealIds = filteredMeals.map(m => m.id);
+    const allVisibleSelected = visibleMealIds.length > 0 && visibleMealIds.every(id => state.selectedMealIds.includes(id));
+
+    if (allVisibleSelected) {
+        // Deselect all visible
+        state.selectedMealIds = state.selectedMealIds.filter(id => !visibleMealIds.includes(id));
+    } else {
+        // Select all visible
+        state.selectedMealIds = [...new Set([...state.selectedMealIds, ...visibleMealIds])];
+    }
+    renderApp();
+}
+
+function handleAssignMealsClick() {
+    if (state.selectedMealIds.length === 0) {
+        showMessage('Please select at least one meal to assign.', 'info');
+        return;
+    }
+    const user = usersData[state.selectedUserId];
+    user.assignedMeals = [...new Set([...user.assignedMeals, ...state.selectedMealIds])];
+    
+    state.selectedMealIds = []; // Clear selection after assigning
+    showMessage('Selected meals have been assigned to the user.', 'success');
+    renderApp();
+}
+
+function handleRemoveAssignedMeal(mealId) {
+    const user = usersData[state.selectedUserId];
+    user.assignedMeals = user.assignedMeals.filter(id => id !== mealId);
+    showMessage(`Meal removed from user's plan.`, 'success');
+    renderApp();
+}
+
+// Add new item handlers
+function handleAddBiomarker() {
+    const user = usersData[state.selectedUserId];
+    user.report.biomarkers.push({ id: `b-${Date.now()}`, name: '', value: '', unit: '', range: {min: '', max: ''}, status: 'Not Tested', isVerified: true });
+    renderApp();
+}
+function handleAddGeneticTrait() {
+    const user = usersData[state.selectedUserId];
+    user.report.geneticTraits.push({ id: `g-${Date.now()}`, title: '', gene: '', result: '', description: '', isVerified: true });
+    renderApp();
+}
+function handleAddFoodScore() {
+    const user = usersData[state.selectedUserId];
+    user.foodScoreboard.push({ id: `f-${Date.now()}`, name: '', improves: '', score: '', isVerified: true });
+    renderApp();
+}
+function handleAddFitness() {
+    const user = usersData[state.selectedUserId];
+    user.lifestyle.fitness.push({ day: 'New Day', activity: '', duration: '', details: '', isVerified: true });
+    renderApp();
+}
+
+function handleUserSelect(userId) {
+    state.selectedUserId = userId;
+    state.selectedMealIds = []; // Reset meal selection when user changes
+    const user = usersData[userId];
+    if (user.status === 'Pending Upload') {
+        handleTabClick('users');
+        return;
+    }
+    handleTabClick('lifestyle-overview');
+}
+
+function handleTabClick(tabId) {
+    if (tabId === 'users') {
+        state.selectedUserId = null; // Deselect the user
+    }
+    state.activeTab = tabId;
+    updateSidebarActiveState();
+    renderApp();
+}
+
+function toggleAccordion(id) {
+    const content = document.getElementById(`accordion-content-${id}`);
+    const icon = document.getElementById(`accordion-icon-${id}`);
+    if (content.style.maxHeight) {
+        content.style.maxHeight = null;
+        icon.classList.remove('rotate-180');
+    } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+        icon.classList.add('rotate-180');
+    }
+};
+
+document.getElementById('tab-container').addEventListener('click', (e) => {
+    const button = e.target.closest('.tab-button');
+    if (button) {
+        if (!state.selectedUserId && button.dataset.tab !== 'users') {
+            showMessage("Please select a user first.", 'info');
+            return;
+        }
+        handleTabClick(button.dataset.tab);
+    }
+});
+
+document.getElementById('profile-toggle').addEventListener('click', () => {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('main-content-wrapper');
+    const profileText = sidebar.querySelector('div.whitespace-nowrap');
+    const tabSpans = sidebar.querySelectorAll('.tab-button span');
+
+    if (sidebar.classList.contains('w-64')) {
+        sidebar.classList.replace('w-64', 'w-20');
+        mainContent.classList.replace('ml-64', 'ml-20');
+        profileText.classList.add('opacity-0');
+        tabSpans.forEach(span => span.classList.add('opacity-0'));
+    } else {
+        sidebar.classList.replace('w-20', 'w-64');
+        mainContent.classList.replace('ml-20', 'ml-64');
+        setTimeout(() => {
+            profileText.classList.remove('opacity-0');
+            tabSpans.forEach(span => span.classList.remove('opacity-0'));
+        }, 150);
+    }
+});
+
+// --- INITIAL RENDER ---
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('specialist-name').textContent = currentSpecialist;
+    renderApp();
+});
+
+</script>
+</body>
+</html>
